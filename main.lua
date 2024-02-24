@@ -262,7 +262,7 @@ for az = 0,359,(360/24) do
             }
         end,
         lower, 80,
-        0.05
+        0.025
     )
     print(", used ", #segs, "curve segments")
     str1 = str1 .. segs_to_svg(segs, false) .. "\n"
@@ -280,7 +280,7 @@ for el = 0,81,10 do
             }
         end,
         -180, 180,
-        0.05,
+        0.025,
         closed
     )
     print(", used ", #segs, "curve segments")

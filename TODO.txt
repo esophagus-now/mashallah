@@ -1,4 +1,6 @@
-[ ] Star chart looks like garbage. Improve it
+[ ] Change everything to be in units of millimetres
+[ ] Local sky looks... not super nice... try to improve it
+[ ] Star chart looks really bad. Improve it
     - Since this will be printed on regular paper (or maybe some kind
       of opaque pastic) I can use colours more easily. I found a
       planisphere that uses yellow for stars, red for constellations,
