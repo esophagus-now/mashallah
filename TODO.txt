@@ -1,0 +1,29 @@
+[ ] Star chart looks like garbage. Improve it
+    - Since this will be printed on regular paper (or maybe some kind
+      of opaque pastic) I can use colours more easily. I found a
+      planisphere that uses yellow for stars, red for constellations,
+      and blue for deep sky objects. It uses green to mark the ecliptic.
+    - Changing the size of the dots based on a star's magnitude looks good.
+      Dominic Ford's charts are kind of insane in that they use Bézier 
+      curves to trace around a filled circle (also, they don't use SVG
+      text elements, looks like some kind of text-to-path thing that
+      was done at generation time)
+    - Only labeling bright or well-known star names
+[ ] Add ecliptic to star chart
+    [ ] With date markers
+[ ] Add numbers to lawhat grid
+[ ] Add time-of-day line on lawhat somewhere in south sky
+[ ] Add a second date line on 'ankabut (aligned with time-of-day line on lawhat)
+    including equation of time correction
+    [ ] With a portion offset below for daylight savings time
+[ ] Make sure to write on 'ankabut that it's calibrated to Toronto's latitude
+[ ] Create reference card
+    [ ] Basic instructions
+    [ ] Example: when will sun rise and set on November 22?
+    [ ] Example: In which months is Orion visible?
+    [ ] Magnetic north correction table for the next few years
+    [ ] Timezone correction for different cities (i.e. difference 
+        between local time and timezone time)
+[ ] Could add a protractor for measuring the sun's angle
+    [ ] We have two flat sheets, there must be some clever way to 
+        measure the elevation of an object in the sky with that...
