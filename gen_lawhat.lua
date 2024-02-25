@@ -13,6 +13,48 @@ function printf(...)
     return(io.write(string.format(...)))
 end
 
+
+------------------------
+
+total_width  = 91.9 -- mm
+total_height = 53.8 -- mm
+draw_width  = 85.9 -- mm
+draw_height = 47.8 -- mm
+
+draw_xoff = (total_width  - draw_width )/2
+draw_yoff = (total_height - draw_height)/2
+
+my_xmin = -180
+my_xmax = 180
+my_ymin = -90
+my_ymax = 90
+my_xrange = my_xmax - my_xmin
+my_yrange = my_ymax - my_ymin
+
+function remap_x(x)
+    -- Want my_min to map to draw_xoff
+    -- Want my_max to map to draw_xoff + draw_width
+    return (x-my_xmin) * draw_width/my_xrange + draw_xoff
+end
+
+function remap_y(y, my_min, my_max)
+    -- Want my_min to map to draw_yoff + draw_height
+    -- Want my_max to map to draw_yoff
+    return (y-my_ymin) * draw_height/-my_yrange + draw_yoff + draw_height
+end
+
+-- No idea what to put here. This number is 0.6 arc minutes 
+-- (the typical human visual acuity) times 28 inches (the
+-- nominal arm length). And then divide it by 3 for "good
+-- measure". This is quite arbitrary but I had to arbitrate 
+-- something!
+draw_tol = 0.333*0.125 -- mm
+
+-- Apparently your typical Vernier acuity is 27 microns, so
+-- we'll use that as our line widths. I guess.
+-- Well, that looks terrible, so quadruple it. I guess.
+line_width = 4*0.027 -- mm
+
 ------------------------
 
 -- Given a function f:R -> R^3, returns the x component of the
@@ -208,7 +250,7 @@ function segs_to_svg(segs, closed, stroke)
         if not connected[i] then start_idx = i end
     end
     
-    local ret = string.format([[<path fill="none" stroke="%s" d="]], stroke)
+    local ret = string.format([[<path fill="none" stroke="%s" stroke-width="%f" d="]], stroke, line_width)
     for i = start_idx,start_idx+#segs-1 do
         local idx = i
         if idx > #segs then idx = idx - #segs end
@@ -235,11 +277,12 @@ function segs_to_svg(segs, closed, stroke)
 end
 
 latitude = 43.65 -- 43.65 degrees for Toronto
-str1 = [[
-<svg viewBox="-180 -90 360 180" xmlns="http://www.w3.org/2000/svg">
-<g transform="scale(1,-1)">
-
-]]
+str1 = string.format([[
+<svg viewBox="0 0 %f %f" width="%fmm" height="%fmm" xmlns="http://www.w3.org/2000/svg">
+]],
+        total_width, total_height,
+        total_width, total_height
+)
 
 if not package.path:match"%./%?%.lua" then
     package.path = package.path .. ";./?.lua"
@@ -257,12 +300,12 @@ for az = 0,359,(360/24) do
     segs = fit_function(
         function(a) 
             return {
-                theta(azimuth_line(a,az,latitude)),
-                phi  (azimuth_line(a,az,latitude)) 
+                remap_x(theta(azimuth_line(a,az,latitude))),
+                remap_y(phi  (azimuth_line(a,az,latitude))) 
             }
         end,
         lower, 80,
-        0.025
+        draw_tol
     )
     print(", used ", #segs, "curve segments")
     str1 = str1 .. segs_to_svg(segs, false) .. "\n"
@@ -275,19 +318,19 @@ for el = 0,81,10 do
     segs = fit_function(
         function(a) 
             return {
-                theta(elevation_circle(a,el,latitude)),
-                phi  (elevation_circle(a,el,latitude)) 
+                remap_x(theta(elevation_circle(a,el,latitude))),
+                remap_y(phi  (elevation_circle(a,el,latitude))) 
             }
         end,
         -180, 180,
-        0.025,
+        draw_tol,
         closed
     )
     print(", used ", #segs, "curve segments")
     str1 = str1 .. segs_to_svg(segs, closed) .. "\n"
 end
 
-str1 = str1 .. "</g></svg>"
+str1 = str1 .. "</svg>"
 
 f = io.open("out/lawhat.svg", "wb")
 f:write(str1)

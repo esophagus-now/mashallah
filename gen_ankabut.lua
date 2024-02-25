@@ -1,5 +1,32 @@
 dofile"constellation_lut.lua"
 
+total_width  = 91.9 -- mm
+total_height = 53.8 -- mm
+draw_width  = 85.9 -- mm
+draw_height = 47.8 -- mm
+
+draw_xoff = (total_width  - draw_width )/2
+draw_yoff = (total_height - draw_height)/2
+
+my_xmin = -180
+my_xmax = 180
+my_ymin = -90
+my_ymax = 90
+my_xrange = my_xmax - my_xmin
+my_yrange = my_ymax - my_ymin
+
+function remap_x(x)
+    -- Want my_min to map to draw_xoff
+    -- Want my_max to map to draw_xoff + draw_width
+    return (x-my_xmin) * draw_width/my_xrange + draw_xoff
+end
+
+function remap_y(y, my_min, my_max)
+    -- Want my_min to map to draw_yoff
+    -- Want my_max to map to draw_yoff + draw_height
+    return (y-my_ymin) * draw_height/my_yrange + draw_yoff
+end
+
 f = assert(io.open"IAU-CSN-fixed.txt")
 
 tab = {}
@@ -22,16 +49,20 @@ f:close()
 
 f = io.open("out/ankabut.svg", "wb")
 
-f:write[[
-<svg viewBox="-180 -90 360 180" xmlns="http://www.w3.org/2000/svg">
-<g transform="scale(1,1)">
-]]
+f:write(string.format([[
+<svg viewBox="0 0 %f %f" width="%fmm" height="%fmm" xmlns="http://www.w3.org/2000/svg">
+]],
+        total_width, total_height,
+        total_width, total_height
+))
 
 -- returns a reasonable radius for drawing a star
 -- given its magnitude
 function mag_radius(mag)
+    -- Capping magnitudes
     if mag > 6.5 then mag = 6.5 end
     if mag < -1 then mag = -1 end
+    
     -- Linearly map mag into range 1-10. By the way,
     -- we want larger magnitudes to correspond to 
     -- smaller circles
@@ -43,7 +74,12 @@ function mag_radius(mag)
     -- large magnitudes, so remap into 1-10 and 
     -- take the log again
     mag = mag*9+1
-    return 0.2+math.log(mag,10)
+    mag = math.log(mag,10)
+    -- Now we have something in the range 0-1. We want
+    -- our biggest radius to be 1/150th (say) of the
+    -- smallest dimension of our drawing area, and we
+    -- want our smallest radius to be 1/3 (say) of that
+    return (mag*0.67 + 0.33) * (1/150)*math.min(draw_width, draw_height)
 end
 
 for i,v in ipairs(tab) do
@@ -55,16 +91,16 @@ for i,v in ipairs(tab) do
     ))]]--
     f:write(string.format(
         [[<circle cx="%f" cy="%f" r="%f" fill="black" stroke-width="0"/>]].."\n",
-        -ra + 180, -dec, mag_radius(mag)
+        remap_x(-ra + 180), remap_y(-dec), mag_radius(mag)
     ))
     if false and mag < 2.2 then
         f:write(string.format(
             [[<text style="font-size:4" x="%f" y="%f"> %s</text>]].."\n",
-            -ra + 180, -dec, name
+            remap_x(-ra + 180), remap_y(-dec), name
         ))
     end
 end
 
-f:write"</g></svg>"
+f:write"</svg>"
 
 f:close()

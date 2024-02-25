@@ -154,7 +154,15 @@ function fit_segments(p, tol, dl, dr, closed)
     -- guess them
     if not dl or not dr then
         if closed then
-            local t = {p[#p],p[1],p[2]}
+            local last_point = p[#p]
+            -- Sometimes the user's last point is the same as the first,
+            -- and sometimes the user just wants us to bridge the gap. 
+            -- Try to DTRT
+            if vec_mt.norm(last_point - p[1]) < 1e-8 then
+                assert(#p>=4, "Doesn't make sense to take center tangent at a cusp. Your three curve-defining points have two of them equal")
+                last_point = p[#p-2]
+            end
+            local t = {last_point,p[1],p[2]}
             dl = center_tangent(t,2)
             dr = -dl
         else
@@ -165,7 +173,8 @@ function fit_segments(p, tol, dl, dr, closed)
     
     -- We start with a chordal parameterization of our points. We'll
     -- use Newton's method to improve this.
-    local t = chordal_paramn(p, 0.5)
+    local t = chordal_paramn(p, 0.5) -- alpha=0.5 gives centripetal parameterization. 
+                                     -- Improves results for reasons I don't understand
     --print(t)
 
     local ret;
@@ -275,8 +284,8 @@ function fit_segments(p, tol, dl, dr, closed)
             end
         end
 
-        local err_norm = vec{}
-        for i,v in ipairs(err) do err_norm[i] = v:norm() end
+        -- local err_norm = vec{}
+        -- for i,v in ipairs(err) do err_norm[i] = v:norm() end
         --print("err", err_norm)
         --print("max", math.sqrt(max_sqerr))
         --print("total_sq", total_sqerr)
@@ -371,37 +380,15 @@ end
 -- points less than tol (default 1e-8) away from the previous point. 
 -- If you pass a truthy value for avg, then instead of deleting one
 -- of the points we'll average them
--- MM Feb 24 / 2024: For closed segments, also try to remove the last
--- point if it's too close to the first
 function remove_duplicates(p, tol, closed, avg)
     local tol = tol or 1e-8
     local ret = vec{p[1]}
-    for i = 2,#p-1 do
+    for i = 2,#p do
         local dist = vec_mt.norm(p[i] - p[i-1])
         if dist > tol then
             table.insert(ret, p[i])
         elseif avg then
             ret[#ret] = 0.5*(p[i] + p[i-1]) -- TODO: is there are more numerically stable way to do this?
-        end
-    end
-
-    -- All these corner cases are eating way at the elegance of this method...
-    if closed then
-        local dist_left = vec_mt.norm(p[#p] - p[#p-1])
-        local dist_right = vec_mt.norm(p[1] - p[#p])
-        if dist_left > tol and dist_right > tol then
-            table.insert(ret, p[#p])
-        elseif avg and dist_left <= tol then
-            ret[#ret] = 0.5*(p[#p] + p[#p-1]) -- TODO: is there are more numerically stable way to do this?
-        elseif avg and dist_right <= tol then
-            ret[#ret] = 0.5*(p[#p] + p[1]) -- TODO: is there are more numerically stable way to do this?
-        end
-    else
-        local dist = vec_mt.norm(p[#p] - p[#p-1])
-        if dist > tol then
-            table.insert(ret, p[#p])
-        elseif avg then
-            ret[#ret] = 0.5*(p[#p] + p[#p-1]) -- TODO: is there are more numerically stable way to do this?
         end
     end
 
