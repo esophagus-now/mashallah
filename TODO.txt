@@ -4,17 +4,16 @@ IN CODE
 [x] Tidy up the coordinates. Right now there's some super weird
     stuff to map things into the range -180 to +180, when what
     I really want is to go from 360 to 0
-[ ] Ahhhh.... the IAU-CSN only has named stars, but there are tons of
+[x] Ahhhh.... the IAU-CSN only has named stars, but there are tons of
     visible starts that aren't named.... damn, I think I need to go back
     to BSC5
-[ ] Add "time-of-day line" on lawhat somewhere in south sky
-    -> A.K.A. Sidereal Time Scale
-[ ] Add ecliptic to 'ankabut
+[/] Add ecliptic to 'ankabut
     [ ] With True Sun date markers on the curve itself
 [ ] Add a second date line on 'ankabut (aligned with time-of-day line on lawhat) including equation of time correction
     [ ] With a portion offset below for daylight savings time
 [ ] Add in constellation line art
-MANUALLY?
+[ ] Add "time-of-day line" on lawhat somewhere in south sky
+    -> A.K.A. Sidereal Time Scale
 [ ] Add numbers to lawhat grid
 [ ] Local sky looks... not super nice... try to improve it
 [ ] Star chart looks really bad. Improve it
@@ -36,11 +35,12 @@ MANUALLY?
     [ ] Timezone correction for different cities (i.e. difference 
         between local time and timezone time)
     [ ] Make sure to write on 'ankabut that it's calibrated to Toronto's latitude
-[ ] Could add a protractor for measuring the sun's angle
-    [ ] We have two flat sheets, there must be some clever way to 
-        measure the elevation of an object in the sky with that...
 
 OTHER
 [ ] Write README/CONTRIBUTING/LICENSE
 [ ] Do a nicer write-up of how I adapted the graphics gems method
 [ ] Maybe try to release curve-fitter as a library for people to use
+[ ] Maybe try to release the debugger as a library
+[ ] Could add a protractor for measuring the sun's angle
+    [ ] We have two flat sheets, there must be some clever way to 
+        measure the elevation of an object in the sky with that...
