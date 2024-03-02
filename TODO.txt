@@ -7,8 +7,8 @@ IN CODE
 [x] Ahhhh.... the IAU-CSN only has named stars, but there are tons of
     visible starts that aren't named.... damn, I think I need to go back
     to BSC5
-[/] Add ecliptic to 'ankabut
-    [ ] With True Sun date markers on the curve itself
+[x] Add ecliptic to 'ankabut
+    [x] With True Sun date markers on the curve itself
 [ ] Add a second date line on 'ankabut (aligned with time-of-day line on lawhat) including equation of time correction
     [ ] With a portion offset below for daylight savings time
 [ ] Add in constellation line art

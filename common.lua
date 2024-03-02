@@ -41,6 +41,10 @@ end
 -- to be similar for any laser cutter
 laser_kerf = 0.2 -- mm
 
+-- Minimum dot size on printer I'm using
+printer_dpi = 300 -- DPI
+dot_size = (1/printer_dpi)*25.4 -- mm
+
 ----------------------
 -- Helper functions --
 ----------------------
