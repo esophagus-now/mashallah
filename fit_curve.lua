@@ -134,7 +134,7 @@ function fit_segments(p, tol, dl, dr, closed)
     assert(#p>1)
 
     setmetatable(p, vec_mt)
-    --print("\nFitting to", p, dl, dr)
+    -- print("\nFitting to", p[1], "...", p[#p], "(" .. #p .. ")")
     
     -- Special case for two points
     if #p == 2 then
@@ -293,7 +293,7 @@ function fit_segments(p, tol, dl, dr, closed)
         -- Trick from graphics gems: if error is too big to begin with, don't bother wasting
         -- computer time on something that probably won't converge
         if max_sqerr > 100*tol*tol or num_iters >= MAX_ITERS or total_sqerr >= 0.99 * last_total_sqerr then
-            --print"Not converging. Give up and split."
+            -- print"Not converging. Give up and split."
             local left_pts = {}
             local right_pts = {}
             for i = 1,max_sqerr_idx do
@@ -311,7 +311,7 @@ function fit_segments(p, tol, dl, dr, closed)
             return ret
         elseif max_sqerr < tol*tol then
             -- Within desired tolerance
-            --print"Met tolerance"
+            -- print"Met tolerance"
             
             -- Only returning one curve segment, but this fn is always advertised
             -- as returning a list of segments, so return a list of length 1
@@ -321,8 +321,7 @@ function fit_segments(p, tol, dl, dr, closed)
         last_total_sqerr = total_sqerr
         
         num_iters = num_iters + 1
-        --print("Iteration", num_iters)
-        assert(num_iters <= MAX_ITERS, "Exceeded maximum number of iterations to converge spline parameterization")
+        -- print("Iteration", num_iters)
         
         -- Do an iteration of Newton's method to reparameterize our t values
         -- For each point in our list, there is a closest point to it on the
@@ -369,8 +368,13 @@ function fit_segments(p, tol, dl, dr, closed)
             -- Alas... lua concat has lower precedence than arithmetic. Oh well.
             local num   = err[i]..B_prime
             local denom = (err[i]..B_prime_prime) + (B_prime..B_prime)
-            if math.abs(denom) > 1e-8 then
+            if math.abs(denom) > 1e-5 then
                 t[i] = ti - num / denom
+                -- MM Mar 1 2023: I don't know a good way to deal with this,
+                -- (and the graphics gems code I'm basing this on doesn't
+                -- seem to need to do this) but add an extra safety check
+                -- to prevent invalid reparameterizations.
+                if t[i] <= t[i-1] or t[i] >= t[i+1] then t[i] = ti end
             end 
         end
     end 
@@ -499,7 +503,8 @@ end
 --  - Note that we do not enforce equally-spaced ts in the T array.
 -- You can optionally provide your own squared distance function
 function sample_max_spacing(f, t0, t1, dmax, sqdist, max_strikes)
-    local max_strikes = max_strikes or 5
+    -- MM March 2 / 2024: Thirty strikes oughta be enough for anyone!
+    local max_strikes = max_strikes or 30
     
     if t0 > t1 then t0,t1 = t1,t0 end
 
