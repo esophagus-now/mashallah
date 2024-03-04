@@ -112,6 +112,14 @@ str1 = str1 .. string.format([[
         total_width, total_height,
         laser_kerf
 )
+-- For my own sake, add an outline for the safe drawing area
+str1 = str1 .. string.format([[
+    <rect x="%f" y="%f" width="%f" height="%f" fill="none" stroke="orange" stroke-width="%f" />
+]],
+    draw_xoff, draw_yoff,
+    draw_width, draw_height,
+    laser_kerf
+)
 
 for az = 0,359,(360/24) do
     io.write("Working on azimuth line ", az)
