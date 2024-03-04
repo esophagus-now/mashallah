@@ -5,6 +5,7 @@ require"vec"
 require"fit_curve"
 require"common"
 require"constellation_lut"
+require"ldb"
 
 -----------------------
 -- Read in star data --
@@ -99,7 +100,85 @@ segs = fit_function(
 )
 print(", used ", #segs, "curve segments")
 f:write(segs_to_svg(segs, laser_kerf, true, "green") .. "\n")
+-- Now add tick markers on the ecliptic for dates
 
+-- This is a COMPLETELY STOLEN function from Alejandro Jenkins's
+-- "The Sun's Position in the Sky". That is a really great article,
+-- I recommend reading it
+-- d is the time in 24 hour days past Jan 1 2013 midnight UTC. 
+-- Returns angle in degrees around the ecliptic measured from 
+-- the March equinox
+function true_anomaly(d)
+    local M = -0.0410 + 0.017202*d -- rad
+    local theta_E = (
+        -1.3411 + M + 0.0334*math.sin(M) + 0.0003*math.sin(2*M)
+    ) -- rad
+    return math.deg(theta_E)
+end
+
+months = {
+    {"Ja", 31},
+    {"Fe", 28},
+    {"May", 31},
+    {"Ap", 30},
+    {"Mr", 31},
+    {"Jn", 30},
+    {"Jl", 31},
+    {"Au", 31},
+    {"Se", 30},
+    {"Oc", 31},
+    {"No", 30},
+    {"De", 31}
+}
+
+d = 0
+for _,m in ipairs(months) do
+    local ta = true_anomaly(d)
+    local tick_pos = ecliptic(ta)
+    local tick_height = 0.8 -- mm
+
+    f:write(string.format([[
+        <path stroke="green" stroke-width="%f" stroke-linecap="round" d="M %f,%f v %f" />
+    ]],
+        2*dot_size,
+        tick_pos[1], tick_pos[2], -tick_height -- mm
+    ))
+
+    f:write(string.format([[
+        <text x="%f" y="%f" font-size="%f" text-anchor="end" alignment-baseline="central" font-family="Bell Centennial, Helvetica, sans-serif" transform="rotate(90)" transform-origin="%f %f">%s</text>
+    ]],
+        tick_pos[1], tick_pos[2] - tick_height - 0.2, 
+        1.8, -- mm, 6pt font
+        tick_pos[1], tick_pos[2] - tick_height - 0.2,
+        m[1]
+    ))
+
+    for d2 = 4,m[2]-1,5 do
+        local day_num = d2+1
+        local tick_height = 0.6
+        local ta = true_anomaly(d+d2)
+        local tick_pos = ecliptic(ta)
+        f:write(string.format([[
+            <path stroke="green" stroke-width="%f" stroke-linecap="round" d="M %f,%f v %f" />
+        ]],
+            2*dot_size,
+            tick_pos[1], tick_pos[2], -tick_height -- mm
+        ))
+
+        if day_num == 15 then
+            f:write(string.format([[
+                <text x="%f" y="%f" font-size="%f" text-anchor="end" alignment-baseline="central" font-family="Bell Centennial, Helvetica, sans-serif" transform="rotate(90)" transform-origin="%f %f">%s</text>
+            ]],
+                tick_pos[1], tick_pos[2] - tick_height, 
+                1.4, -- mm, 4pt
+                tick_pos[1], tick_pos[2] - tick_height,
+                tostring(day_num)
+            ))
+        end
+    end
+
+    d = d + m[2]
+end
 
 ----------------
 -- Draw stars --
@@ -145,78 +224,79 @@ for i,v in ipairs(tab) do
     end
 end
 
--- Now add tick markers on the ecliptic for dates
 
--- This is a COMPLETELY STOLEN function from Alejandro Jenkins's
--- "The Sun's Position in the Sky". That is a really great article,
--- I recommend reading it
--- d is the time in 24 hour days past Jan 1 2013 midnight UTC. 
--- Returns angle in degrees around the ecliptic measured from 
--- the March equinox
-function true_anomaly(d)
-    local M = -0.0410 + 0.017202*d -- rad
-    local theta_E = (
-        -1.3411 + M + 0.0334*math.sin(M) + 0.0003*math.sin(2*M)
-    ) -- rad
-    return math.deg(theta_E)
+-------------------------
+-- Draw constellations --
+-------------------------
+
+function add_line(x1, y1, x2, y2)
+    f:write(string.format([[
+        <path stroke="black" stroke-width="%f" stroke-linecap="round" d="M %f,%f L %f,%f"/>
+    ]],
+        dot_size,
+        remap_x(tonumber(x1)),
+        remap_y(tonumber(y1)),
+        remap_x(tonumber(x2)),
+        remap_y(tonumber(y2))
+    ))
 end
 
-months = {
-    {"Jan", 31},
-    {"Feb", 28},
-    {"Mar", 31},
-    {"Apr", 30},
-    {"May", 31},
-    {"Jun", 30},
-    {"Jul", 31},
-    {"Aug", 31},
-    {"Sep", 30},
-    {"Oct", 31},
-    {"Nov", 30},
-    {"Dec", 31}
-}
+-- Dominic Ford is the man!
+cdat = assert(io.open"constellation_stick_figures.dat")
+for l in cdat:lines() do
+    if not l:match"#" then
+        local c, ra_start, de_start, ra_end, de_end = 
+            l:match("(%w+)%s+" .. string.rep("([0-9%.-]+)%s*", 4))
+        ;
+        
+        if c then
+            -- Check if this line segment intersects with RA=0
+            ra_start = angle_clamp(assert(tonumber(ra_start)))
+            de_start =             assert(tonumber(de_start))
+            ra_end   = angle_clamp(assert(tonumber(ra_end)))
+            de_end   =             assert(tonumber(de_end))
 
-d = 0
-for _,m in ipairs(months) do
-    local ta = true_anomaly(d)
-    local tick_pos = ecliptic(ta)
+            -- Just to simplify the next bit of logic, make end>start
+            if ra_end < ra_start then
+                ra_start,ra_end = ra_end,ra_start
+                de_start,de_end = de_end,de_start
+            end
+            
+            -- There are always two ways to draw a line between two
+            -- coordinates (since we're technically on the surface
+            -- of a sphere). Always pick the shorter one
+            local dra = ra_end-ra_start
+            if dra > 180 then
+                -- Draw from end to start. We know this will
+                -- cross the RA=0 axis, so find the point of
+                -- intersection and draw two lines
+                local slope = (de_start-de_end)/angle_clamp(ra_start-ra_end)
+                local de_at_intersection = de_end + slope*(360-ra_end)
 
-    f:write(string.format([[
-        <path stroke="green" stroke-width="%f" stroke-linecap="round" d="M %f,%f v %f" />
-    ]],
-        laser_kerf,
-        tick_pos[1], tick_pos[2], -0.8 -- mm
-    ))
+                add_line(ra_end,de_end,360,de_at_intersection)
+                add_line(0,de_at_intersection,ra_start,de_start)
+            else
+                -- Draw from start to end
+                add_line(ra_start,de_start,ra_end,de_end)
+            end
 
-    f:write(string.format([[
-        <text x="%f" y="%f" font-size="%f" text-anchor="middle">%s</text>
-    ]],
-        tick_pos[1], tick_pos[2] - 1, 1, m[1]
-    ))
-
-    for d2 = 1,m[2]-1 do
-        local tick_height = (d2%5 == 0) and 0.6 or 0.3
-        local ta = true_anomaly(d+d2)
-        local tick_pos = ecliptic(ta)
-        f:write(string.format([[
-            <path stroke="green" stroke-width="%f" stroke-linecap="round" d="M %f,%f v %f" />
-        ]],
-            laser_kerf,
-            tick_pos[1], tick_pos[2], -tick_height -- mm
-        ))
-
-        if d2 == 10 or d2 == 20 then
-            f:write(string.format([[
-                <text x="%f" y="%f" font-size="%f" text-anchor="middle">%s</text>
-            ]],
-                tick_pos[1], tick_pos[2] - 0.8, 0.8, tostring(d2)
-            ))
+            
         end
     end
-    
-    d = d + m[2]
 end
 
+cdat:close()
+
+
+-------------
+-- Credits --
+-------------
+
+f:write(string.format([[
+    <text font-family="Helvetica, sans-serif" font-size="1.4" x="%f" y="%f" text-anchor="middle" alignment-baseline="ideographic">Star data from Yale BSC. Ecliptic dates from a formula by Alejandro Jenkins. Constellation art from Dominic Ford.</text>
+]],
+    draw_xoff + draw_width/2, draw_yoff+draw_height
+))
 
 ------------------------
 -- Close out SVG file --

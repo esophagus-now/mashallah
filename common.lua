@@ -1,7 +1,7 @@
 ------------------------
 -- Physical constants --
 ------------------------
-earth_ecc = 0 -- Eccentricity of Earth's orbit
+earth_ecc = 0.017 -- Eccentricity of Earth's orbit
 axial_tilt = 23.44 -- degrees, US Naval Observatory 2023
 latitude = 43.65 -- degrees, for Toronto
 

@@ -11,7 +11,9 @@ IN CODE
     [x] With True Sun date markers on the curve itself
 [ ] Add a second date line on 'ankabut (aligned with time-of-day line on lawhat) including equation of time correction
     [ ] With a portion offset below for daylight savings time
-[ ] Add in constellation line art
+[x] Add in constellation line art
+    [ ] Prob should add constellation labels too
+    [ ] (And maybe label a few stars)
 [ ] Add "time-of-day line" on lawhat somewhere in south sky
     -> A.K.A. Sidereal Time Scale
 [ ] Add numbers to lawhat grid
