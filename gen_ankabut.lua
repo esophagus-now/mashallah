@@ -306,29 +306,6 @@ function ra_diff(d)
     return diff
 end
 
--- First bracket the root
-left = 0
-right = 0
-iter_count = 0 -- Just to prevent infinite loops
-while ra_diff(right)*ra_diff(left) > 0 do
-    right = right + 10 -- whatever
-    iter_count = iter_count + 1
-    assert(iter_count < 100, "Could not bracket EOT=0")
-end
-
--- Now just binary search
-iter_count = 0 -- Just to prevent infinite loops
-while math.abs(ra_diff(left)) > 1e-5 do
-    local m = (left+right)/2
-    if ra_diff(m)*ra_diff(left) > 0 then
-        left = m
-    else
-        right = m
-    end
-    iter_count = iter_count + 1
-    assert(iter_count < 100, "Marco cannot write binary root search correctly")
-end
-
 ra_at_day_0 = 360 - equinox_day*degrees_per_day
 
 d = 0
@@ -378,6 +355,99 @@ for _,m in ipairs(months) do
                 tick_pos[1], tick_pos[2] - tick_height,
                 tostring(day_num)
             ))
+        end
+    end
+
+    d = d + m[2]
+end
+
+
+----------------------------
+-- Daylight Savings Scale --
+----------------------------
+
+-- What a pain... we should really ditch DST. This is gonna be a bit less generalized.
+
+-- afaik the rule for DST is that it starts on the second Sunday of March and ends on
+-- the first Sunday of November. So the earliest it could possibly start is March 8th
+-- and the latest it could possible end is November 6th. 
+
+hour_shift = -360/24 -- deg
+
+dst_first_day = months[1][2] + months[2][2] + 8
+dst_last_day  = 6
+for i = 1,10 do dst_last_day = dst_last_day + months[i][2] end
+
+-- Only draw the line in DST months
+-- Measure the distance from the edge to where the first day maps to
+dst_start_xpos = remap_x(angle_clamp(ra_at_day_0 + degrees_per_day*dst_first_day + hour_shift))
+f:write(string.format([[
+    <path d="M %f,%f h %f" stroke="green" stroke-width="%f" />
+]],    
+    draw_xoff, dst_scale_y, dst_start_xpos-draw_xoff,
+    laser_kerf
+))
+-- Measure the distance from the edge to where the last day maps to
+dst_end_xpos = remap_x(angle_clamp(ra_at_day_0 + degrees_per_day*dst_last_day + hour_shift))
+f:write(string.format([[
+    <path d="M %f,%f h %f" stroke="green" stroke-width="%f" />
+]],    
+    dst_end_xpos, dst_scale_y, (draw_xoff+draw_width)-dst_end_xpos,
+    laser_kerf
+))
+
+-- Copy-pasted and edited... so sue me
+d = 0
+for _,m in ipairs(months) do
+    if d >= dst_first_day and d <= dst_last_day then
+        local tick_pos = vec{
+            remap_x(angle_clamp(ra_at_day_0 + degrees_per_day*d + hour_shift)),
+            dst_scale_y
+        }
+        local tick_height = 0.8 -- mm
+    
+        f:write(string.format([[
+            <path stroke="green" stroke-width="%f" stroke-linecap="round" d="M %f,%f v %f" />
+        ]],
+            2*dot_size,
+            tick_pos[1], tick_pos[2], tick_height -- mm
+        ))
+    
+        f:write(string.format([[
+            <text x="%f" y="%f" font-size="%f" text-anchor="start" alignment-baseline="central" font-family="Bell Centennial, Helvetica, sans-serif" transform="rotate(90)" transform-origin="%f %f" fill="green">%s</text>
+        ]],
+            tick_pos[1], tick_pos[2] + tick_height + 0.2, 
+            1.8, -- mm, 6pt font
+            tick_pos[1], tick_pos[2] + tick_height + 0.2,
+            m[1]
+        ))
+    end
+    
+    for d2 = 4,m[2]-1,5 do
+        if (d+d2) >= dst_first_day and (d+d2) <= dst_last_day then
+            local day_num = d2+1
+            local tick_height = 0.6 -- mm
+            local tick_pos = vec{
+                remap_x(angle_clamp(ra_at_day_0 + degrees_per_day*(d+d2) + hour_shift)),
+                dst_scale_y
+            }
+            f:write(string.format([[
+                <path stroke="green" stroke-width="%f" stroke-linecap="round" d="M %f,%f v %f" />
+            ]],
+                2*dot_size,
+                tick_pos[1], tick_pos[2], tick_height -- mm
+            ))
+    
+            if day_num == 15 then
+                f:write(string.format([[
+                    <text x="%f" y="%f" font-size="%f" text-anchor="start" alignment-baseline="central" font-family="Bell Centennial, Helvetica, sans-serif" transform="rotate(90)" transform-origin="%f %f" fill="green">%s</text>
+                ]],
+                    tick_pos[1], tick_pos[2] + tick_height, 
+                    1.4, -- mm, 4pt
+                    tick_pos[1], tick_pos[2] + tick_height,
+                    tostring(day_num)
+                ))
+            end
         end
     end
 

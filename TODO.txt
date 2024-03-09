@@ -8,8 +8,8 @@
     to BSC5
 [x] Add ecliptic to 'ankabut
     [x] With True Sun date markers on the curve itself
-[ ] Add a second date line on 'ankabut (aligned with sidereal time line on lawhat) for standard time
-    [ ] With a portion offset below for daylight savings time
+[x] Add a second date line on 'ankabut (aligned with sidereal time line on lawhat) for standard time
+    [x] With a portion offset below for daylight savings time
 [x] Add in constellation line art
     [ ] Prob should add constellation labels too
     [ ] (And maybe label a few stars)
@@ -29,7 +29,7 @@
       was done at generation time)
     - Only labeling bright or well-known star names
 [ ] Create reference card
-    [ ] Basic instructions
+    [/] Basic instructions
     [ ] Example: when will sun rise and set on November 22?
     [ ] Example: In which months is Orion visible?
     [ ] Magnetic north correction table for the next few years
