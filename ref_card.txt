@@ -1,0 +1,28 @@
+HOW TO USE THE STAR CARD
+
+The transparent sheet is the Lawhat. On it, the curved grid lines are the Local Sky, and the time line is the Time Scale. 
+
+The map of stars is the 'Ankabut. The curved line marked with dates is the Ecliptic, and straight line with dates is the Mean Sun Scale. A portion of the Mean Sun Scale is shifted: this is the Daylight Savings Scale. (Daylight Savings Time is ridiculous but we're stuck with it).
+
+Keep the top and bottom edges of these two cards aligned as you slide the Lawhat left/right over the 'Ankabut. Line up the time of day on the Sidereal Time Scale with the time of year on the Mean Sun Scale (take care to select the right portion based on Daylight Savings Time). The Local Sky grid shows the position of stars in the sky at the given time. The Sun's position in the sky changes from day to day, and is shown by the date marks on the Ecliptic.
+
+EXAMPLE 1: It is 11:50 pm on November 22nd. Where is Deneb?
+
+In late November, we don't use Daylight Savings Time, so use the Mean Sun Scale. Line up 11:50 pm on the Time Scale with November 22nd on the Mean Sun Scale. 
+
+(picture)
+
+
+EXAMPLE 2: When will the Sun rise and set on September 21st?
+
+September is in Daylight Savings Time, so use the Daylight Savings Scale. For sunrise, align the Western horizon with September 21 on the ecliptic, and read the time of day on the Time Scale above September 21st on the Daylight Savings scale. For sunset, repeat using the Eastern horizon.
+
+
+
+EXAMPLE 3: In which months is Orion visible?
+
+
+
+CREDITS
+
+Designed by Marco Merlini in 2023/2024. Star data from Yale BSC. Ecliptic dates from a formula by Alejandro Jenkins. Constellation art from Dominic Ford. 

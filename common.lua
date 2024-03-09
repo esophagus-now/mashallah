@@ -3,7 +3,10 @@
 ------------------------
 earth_ecc = 0.017 -- Eccentricity of Earth's orbit
 axial_tilt = 23.44 -- degrees, US Naval Observatory 2023
-latitude = 43.65 -- degrees, for Toronto
+latitude = 43.65  -- degrees, for Toronto
+longitude = 79.38 -- degrees, for Toronto
+time_zone = -5    -- hours, for Toronto
+sidereal_year = 365.25 -- days
 
 ------------------------
 -- Drawing parameters --
@@ -44,6 +47,18 @@ laser_kerf = 0.2 -- mm
 -- Minimum dot size on printer I'm using
 printer_dpi = 300 -- DPI
 dot_size = (1/printer_dpi)*25.4 -- mm
+
+
+-----------------
+-- Shared data --
+-----------------
+
+-- The Mean Sun scale and Sidereal Time scale have to
+-- line up. Together they determine the time of day.
+-- Also, we need the Daylight Savings scale to line up
+time_of_day_scale_y = draw_yoff + draw_height - 8 -- mm
+dst_scale_y = time_of_day_scale_y + 2.5 -- mm
+
 
 ----------------------
 -- Helper functions --

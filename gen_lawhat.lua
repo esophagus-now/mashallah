@@ -96,7 +96,9 @@ function azimuth_line(t, azimuth, latitude)
     return x2,y,z2
 end
 
---------------------------
+------------------
+-- SVG prologue --
+------------------
 
 str1 = string.format([[
 <svg viewBox="0 0 %f %f" width="%fmm" height="%fmm" xmlns="http://www.w3.org/2000/svg">
@@ -120,6 +122,10 @@ str1 = str1 .. string.format([[
     draw_width, draw_height,
     laser_kerf
 )
+
+---------------------------------
+-- Azimuth and elevation lines --
+---------------------------------
 
 for az = 0,359,(360/24) do
     io.write("Working on azimuth line ", az)
@@ -162,32 +168,89 @@ for el = 0,81,10 do
 end
 
 
+----------------
+-- Time scale --
+----------------
+
 -- Now draw a graduated line for the time of day, which I have been
--- (maybe incorrectly) calling the "Sidereal Time Scale"
+-- calling the "Time Scale"
 
--- I made a sketch that looked "decent" and then measured it
-h_above_bottom   = 8   -- mm
-hour_height      = 2.6 -- mm
-half_hour_height = 1.8 -- mm
-ten_min_height   = 1   -- mm
+-- Top line, aligns with Mean Sun scale
+str1 = str1 .. string.format([[
+    <path d="M %f,%f h %f" stroke-width="%f" stroke="black" />
+]],
+    draw_xoff, time_of_day_scale_y, draw_width,
+    laser_kerf
+)
 
-mm_per_min = draw_width/(24*60)
-hour_width = mm_per_min * 60
+-- Bottom line, aligns with Daylight Savings scale
+str1 = str1 .. string.format([[
+    <path d="M %f,%f h %f" stroke-width="%f" stroke="black" />
+]],
+    draw_xoff, dst_scale_y, draw_width,
+    laser_kerf
+)
 
-for i = 1,24 do
-    str1 = str1 .. string.format(
-    [[
-    <path 
-        fill="none" stroke="black" stroke-width="%f" 
-        stroke-linecap="square"
-        d=" M %f,%f h %f v %f h %f " 
-    />
+-- We need to correctly offset the Time Scale for Toronto's latitude.
+-- It works like this: at noon in UTC+0 on the day of the equinox,
+-- it is 7:00 am and our meridian is shifted according to Toronto's
+-- longitude. This gives us the relative shift between our local sky
+-- and the Time Scale
+time_zone_offset = angle_clamp(longitude + time_zone*(360/24)) -- degrees
+degrees_per_min = -360/(24*60) -- hmmm... needed to negate this?
+
+hour_line_height   = dst_scale_y - time_of_day_scale_y -- mm
+minute_tick_height = math.abs(hour_line_height)/3 -- mm
+
+for i = 0,23 do
+    local hour_num = i%12
+    if hour_num == 0 then hour_num = 12 end
+
+    local hour_str = tostring(hour_num)
+    if hour_num == 12 then
+        hour_str = hour_str .. ((i<12) and "am" or "pm")
+    end
+
+    local hour_angle = angle_clamp(i*60*degrees_per_min + time_zone_offset)
+
+    str1 = str1 .. string.format([[
+        <path d="M %f,%f v %f" stroke-width="%f" stroke="black" />
+        <text x="%f" y="%f" alignment-baseline="ideographic" font-family="Helvetica, sans-serif" font-size="1.4" text-anchor="middle">%s</text>
     ]],
-        line_width,
-        draw_xoff+i*hour_width, draw_yoff+draw_height-h_above_bottom,
-        -hour_width, hour_height, hour_width
+        remap_x(hour_angle), time_of_day_scale_y, hour_line_height,
+        laser_kerf,
+        remap_x(hour_angle), time_of_day_scale_y,
+        hour_str
     )
+
+    -- Add tick marks every 10 minutes
+    for j = 10,50,10 do
+        local minute_angle = angle_clamp(hour_angle + j*degrees_per_min)
+        str1 = str1 .. string.format([[
+            <path d="M %f,%f v %f" stroke-width="%f" stroke="black" stroke-linecap="round"/>
+            <path d="M %f,%f v %f" stroke-width="%f" stroke="black" stroke-linecap="round"/>
+        ]],
+            remap_x(minute_angle), time_of_day_scale_y, minute_tick_height,
+            laser_kerf,
+            remap_x(minute_angle), dst_scale_y, -minute_tick_height,
+            laser_kerf
+        )
+    end
 end
+
+--------------------------------------
+-- Lawhat is calibrated for Toronto --
+--------------------------------------
+
+str1 = str1 .. string.format([[
+    <text font-family="Helvetica, sans-serif" font-size="1.4" x="%f" y="%f" text-anchor="middle" alignment-baseline="ideographic">Calibrated for Toronto (43.7˚ N, 79.4˚ W, UTC-5)</text>
+]],
+    draw_xoff + draw_width/2, draw_yoff+draw_height
+)
+
+------------------------
+-- Write the SVG data --
+------------------------
 
 str1 = str1 .. "</svg>"
 

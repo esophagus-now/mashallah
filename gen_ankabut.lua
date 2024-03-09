@@ -67,6 +67,70 @@ f:write(string.format([[
 ))
 
 
+-------------------------
+-- Draw constellations --
+-------------------------
+
+-- Draw the lines first so that other things are drawn on top
+
+function add_line(x1, y1, x2, y2)
+    f:write(string.format([[
+        <path stroke="gray" stroke-width="%f" stroke-linecap="round" d="M %f,%f L %f,%f"/>
+    ]],
+        dot_size,
+        remap_x(tonumber(x1)),
+        remap_y(tonumber(y1)),
+        remap_x(tonumber(x2)),
+        remap_y(tonumber(y2))
+    ))
+end
+
+-- Dominic Ford is the man!
+cdat = assert(io.open"constellation_stick_figures.dat")
+for l in cdat:lines() do
+    if not l:match"#" then
+        local c, ra_start, de_start, ra_end, de_end = 
+            l:match("(%w+)%s+" .. string.rep("([0-9%.-]+)%s*", 4))
+        ;
+
+        if c then
+            -- Check if this line segment intersects with RA=0
+            ra_start = angle_clamp(assert(tonumber(ra_start)))
+            de_start =             assert(tonumber(de_start))
+            ra_end   = angle_clamp(assert(tonumber(ra_end)))
+            de_end   =             assert(tonumber(de_end))
+
+            -- Just to simplify the next bit of logic, make end>start
+            if ra_end < ra_start then
+                ra_start,ra_end = ra_end,ra_start
+                de_start,de_end = de_end,de_start
+            end
+
+            -- There are always two ways to draw a line between two
+            -- coordinates (since we're technically on the surface
+            -- of a sphere). Always pick the shorter one
+            local dra = ra_end-ra_start
+            if dra > 180 then
+                -- Draw from end to start. We know this will
+                -- cross the RA=0 axis, so find the point of
+                -- intersection and draw two lines
+                local slope = (de_start-de_end)/angle_clamp(ra_start-ra_end)
+                local de_at_intersection = de_end + slope*(360-ra_end)
+
+                add_line(ra_end,de_end,360,de_at_intersection)
+                add_line(0,de_at_intersection,ra_start,de_start)
+            else
+                -- Draw from start to end
+                add_line(ra_start,de_start,ra_end,de_end)
+            end
+
+
+        end
+    end
+end
+
+cdat:close()
+
 -----------------------
 -- Draw the ecliptic --
 -----------------------
@@ -75,19 +139,21 @@ f:write(string.format([[
 -- the Sun in the Sky".This function takes the degree angle along 
 -- the ecliptic (starting from the March equinox) and returns the 
 -- same RA and DEC coordinates we're using everywhere else
-function ecliptic(theta)
+function ecliptic_raw(theta)
     local gamma = -math.rad(axial_tilt)
     local stheta = math.sin(math.rad(theta))
     local ctheta = math.cos(math.rad(theta))
     return vec{
-        remap_x(
-            angle_clamp(math.deg(atan2(
-                math.cos(gamma)*stheta,
-                ctheta
-            )))
-        ),
-        remap_y(math.deg(math.asin(-math.sin(gamma)*stheta)))
+        angle_clamp(math.deg(atan2(
+            math.cos(gamma)*stheta,
+            ctheta
+        ))),
+        math.deg(math.asin(-math.sin(gamma)*stheta))
     }
+end
+function ecliptic(theta)
+    local raw = ecliptic_raw(theta)
+    return vec{remap_x(raw[1]), remap_y(raw[2])}
 end
 
 io.write("Working on ecliptic ")
@@ -108,10 +174,11 @@ f:write(segs_to_svg(segs, laser_kerf, true, "green") .. "\n")
 -- d is the time in 24 hour days past Jan 1 2013 midnight UTC. 
 -- Returns angle in degrees around the ecliptic measured from 
 -- the March equinox
-function true_anomaly(d)
+function true_anomaly(d,mean)
+    local q = mean and 0 or 1
     local M = -0.0410 + 0.017202*d -- rad
     local theta_E = (
-        -1.3411 + M + 0.0334*math.sin(M) + 0.0003*math.sin(2*M)
+        -1.3411 + M + q*0.0334*math.sin(M) + q*0.0003*math.sin(2*M)
     ) -- rad
     return math.deg(theta_E)
 end
@@ -119,9 +186,9 @@ end
 months = {
     {"Ja", 31},
     {"Fe", 28},
-    {"May", 31},
-    {"Ap", 30},
     {"Mr", 31},
+    {"Ap", 30},
+    {"May", 31},
     {"Jn", 30},
     {"Jl", 31},
     {"Au", 31},
@@ -145,7 +212,7 @@ for _,m in ipairs(months) do
     ))
 
     f:write(string.format([[
-        <text x="%f" y="%f" font-size="%f" text-anchor="end" alignment-baseline="central" font-family="Bell Centennial, Helvetica, sans-serif" transform="rotate(90)" transform-origin="%f %f">%s</text>
+        <text x="%f" y="%f" font-size="%f" text-anchor="end" alignment-baseline="central" font-family="Bell Centennial, Helvetica, sans-serif" transform="rotate(90)" transform-origin="%f %f" fill="green">%s</text>
     ]],
         tick_pos[1], tick_pos[2] - tick_height - 0.2, 
         1.8, -- mm, 6pt font
@@ -167,7 +234,7 @@ for _,m in ipairs(months) do
 
         if day_num == 15 then
             f:write(string.format([[
-                <text x="%f" y="%f" font-size="%f" text-anchor="end" alignment-baseline="central" font-family="Bell Centennial, Helvetica, sans-serif" transform="rotate(90)" transform-origin="%f %f">%s</text>
+                <text x="%f" y="%f" font-size="%f" text-anchor="end" alignment-baseline="central" font-family="Bell Centennial, Helvetica, sans-serif" transform="rotate(90)" transform-origin="%f %f" fill="green">%s</text>
             ]],
                 tick_pos[1], tick_pos[2] - tick_height, 
                 1.4, -- mm, 4pt
@@ -179,6 +246,145 @@ for _,m in ipairs(months) do
 
     d = d + m[2]
 end
+
+--------------------
+-- Mean Sun Scale --
+--------------------
+
+f:write(string.format([[
+    <path d="M %f,%f h %f" stroke="green" stroke-width="%f" />
+]],    
+    draw_xoff, time_of_day_scale_y, draw_width,
+    laser_kerf
+))
+
+-- We need to find the day of the equinox. We'll use binary search
+function sun_dec(d)
+    -- I don't quite know what's happening, but the equinox is defined by the mean
+    -- anomaly instead of the true anomaly? idk
+    local ma = true_anomaly(d,true)
+    local pos = ecliptic_raw(ma)
+    return pos[2]
+end
+-- I just happen to know this brackets the equinox that I'm after
+left = 0
+right = 100
+assert(sun_dec(left)*sun_dec(right) <= 0, "These don't bracket the root")
+iter_count = 0 -- Just to prevent infinite loops
+while math.abs(sun_dec(left)) > 1e-5 do
+    local m = (left+right)/2
+    if sun_dec(m)*sun_dec(left) > 0 then
+        left = m
+    else
+        right = m
+    end
+    iter_count = iter_count + 1
+    assert(iter_count < 100, "Marco cannot write binary root search correctly")
+end
+equinox_day = left
+print("equinox_day", equinox_day)
+
+
+degrees_per_day = 360/sidereal_year
+
+-- Find any day of the year where the Mean Sun and True Sun have the 
+-- same right ascension. We do this by finding any zero of the
+-- following function:
+function ra_diff(d)
+    local ta = true_anomaly(d)
+    local pos = ecliptic_raw(ta)
+    local true_sun_ra = pos[1]
+
+    -- Right ascension is measured from the equinox, so rig our Mean
+    -- Sun RA to be zero at the right time
+    local mean_sun_ra = angle_clamp((d-equinox_day)*degrees_per_day)
+    
+    local diff = true_sun_ra-mean_sun_ra
+    if diff >  180 then diff = diff - 360 end
+    if diff < -180 then diff = diff + 360 end
+
+    return diff
+end
+
+-- First bracket the root
+left = 0
+right = 0
+iter_count = 0 -- Just to prevent infinite loops
+while ra_diff(right)*ra_diff(left) > 0 do
+    right = right + 10 -- whatever
+    iter_count = iter_count + 1
+    assert(iter_count < 100, "Could not bracket EOT=0")
+end
+
+-- Now just binary search
+iter_count = 0 -- Just to prevent infinite loops
+while math.abs(ra_diff(left)) > 1e-5 do
+    local m = (left+right)/2
+    if ra_diff(m)*ra_diff(left) > 0 then
+        left = m
+    else
+        right = m
+    end
+    iter_count = iter_count + 1
+    assert(iter_count < 100, "Marco cannot write binary root search correctly")
+end
+
+ra_at_day_0 = 360 - equinox_day*degrees_per_day
+
+d = 0
+for _,m in ipairs(months) do
+    local tick_pos = vec{
+        remap_x(angle_clamp(ra_at_day_0 + degrees_per_day*d)),
+        time_of_day_scale_y
+    }
+    local tick_height = 0.8 -- mm
+
+    f:write(string.format([[
+        <path stroke="green" stroke-width="%f" stroke-linecap="round" d="M %f,%f v %f" />
+    ]],
+        2*dot_size,
+        tick_pos[1], tick_pos[2], -tick_height -- mm
+    ))
+
+    f:write(string.format([[
+        <text x="%f" y="%f" font-size="%f" text-anchor="end" alignment-baseline="central" font-family="Bell Centennial, Helvetica, sans-serif" transform="rotate(90)" transform-origin="%f %f" fill="green">%s</text>
+    ]],
+        tick_pos[1], tick_pos[2] - tick_height - 0.2, 
+        1.8, -- mm, 6pt font
+        tick_pos[1], tick_pos[2] - tick_height - 0.2,
+        m[1]
+    ))
+
+    for d2 = 4,m[2]-1,5 do
+        local day_num = d2+1
+        local tick_height = 0.6 -- mm
+        local tick_pos = vec{
+            remap_x(angle_clamp(ra_at_day_0 + degrees_per_day*(d+d2))),
+            time_of_day_scale_y
+        }
+        f:write(string.format([[
+            <path stroke="green" stroke-width="%f" stroke-linecap="round" d="M %f,%f v %f" />
+        ]],
+            2*dot_size,
+            tick_pos[1], tick_pos[2], -tick_height -- mm
+        ))
+
+        if day_num == 15 then
+            f:write(string.format([[
+                <text x="%f" y="%f" font-size="%f" text-anchor="end" alignment-baseline="central" font-family="Bell Centennial, Helvetica, sans-serif" transform="rotate(90)" transform-origin="%f %f" fill="green">%s</text>
+            ]],
+                tick_pos[1], tick_pos[2] - tick_height, 
+                1.4, -- mm, 4pt
+                tick_pos[1], tick_pos[2] - tick_height,
+                tostring(day_num)
+            ))
+        end
+    end
+
+    d = d + m[2]
+end
+
+
 
 ----------------
 -- Draw stars --
@@ -223,80 +429,6 @@ for i,v in ipairs(tab) do
         ))
     end
 end
-
-
--------------------------
--- Draw constellations --
--------------------------
-
-function add_line(x1, y1, x2, y2)
-    f:write(string.format([[
-        <path stroke="black" stroke-width="%f" stroke-linecap="round" d="M %f,%f L %f,%f"/>
-    ]],
-        dot_size,
-        remap_x(tonumber(x1)),
-        remap_y(tonumber(y1)),
-        remap_x(tonumber(x2)),
-        remap_y(tonumber(y2))
-    ))
-end
-
--- Dominic Ford is the man!
-cdat = assert(io.open"constellation_stick_figures.dat")
-for l in cdat:lines() do
-    if not l:match"#" then
-        local c, ra_start, de_start, ra_end, de_end = 
-            l:match("(%w+)%s+" .. string.rep("([0-9%.-]+)%s*", 4))
-        ;
-        
-        if c then
-            -- Check if this line segment intersects with RA=0
-            ra_start = angle_clamp(assert(tonumber(ra_start)))
-            de_start =             assert(tonumber(de_start))
-            ra_end   = angle_clamp(assert(tonumber(ra_end)))
-            de_end   =             assert(tonumber(de_end))
-
-            -- Just to simplify the next bit of logic, make end>start
-            if ra_end < ra_start then
-                ra_start,ra_end = ra_end,ra_start
-                de_start,de_end = de_end,de_start
-            end
-            
-            -- There are always two ways to draw a line between two
-            -- coordinates (since we're technically on the surface
-            -- of a sphere). Always pick the shorter one
-            local dra = ra_end-ra_start
-            if dra > 180 then
-                -- Draw from end to start. We know this will
-                -- cross the RA=0 axis, so find the point of
-                -- intersection and draw two lines
-                local slope = (de_start-de_end)/angle_clamp(ra_start-ra_end)
-                local de_at_intersection = de_end + slope*(360-ra_end)
-
-                add_line(ra_end,de_end,360,de_at_intersection)
-                add_line(0,de_at_intersection,ra_start,de_start)
-            else
-                -- Draw from start to end
-                add_line(ra_start,de_start,ra_end,de_end)
-            end
-
-            
-        end
-    end
-end
-
-cdat:close()
-
-
--------------
--- Credits --
--------------
-
-f:write(string.format([[
-    <text font-family="Helvetica, sans-serif" font-size="1.4" x="%f" y="%f" text-anchor="middle" alignment-baseline="ideographic">Star data from Yale BSC. Ecliptic dates from a formula by Alejandro Jenkins. Constellation art from Dominic Ford.</text>
-]],
-    draw_xoff + draw_width/2, draw_yoff+draw_height
-))
 
 ------------------------
 -- Close out SVG file --

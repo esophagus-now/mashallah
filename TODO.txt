@@ -1,4 +1,3 @@
-IN CODE
 [x] Change everything to be in units of millimetres and scale it to
     the correct size (say credit card size)
 [x] Tidy up the coordinates. Right now there's some super weird
@@ -9,12 +8,12 @@ IN CODE
     to BSC5
 [x] Add ecliptic to 'ankabut
     [x] With True Sun date markers on the curve itself
-[ ] Add a second date line on 'ankabut (aligned with time-of-day line on lawhat) including equation of time correction
+[ ] Add a second date line on 'ankabut (aligned with sidereal time line on lawhat) for standard time
     [ ] With a portion offset below for daylight savings time
 [x] Add in constellation line art
     [ ] Prob should add constellation labels too
     [ ] (And maybe label a few stars)
-[ ] Add "time-of-day line" on lawhat somewhere in south sky
+[x] Add "time-of-day line" on lawhat somewhere in south sky
     -> A.K.A. Sidereal Time Scale
 [ ] Add numbers to lawhat grid
 [ ] Local sky looks... not super nice... try to improve it
@@ -36,7 +35,8 @@ IN CODE
     [ ] Magnetic north correction table for the next few years
     [ ] Timezone correction for different cities (i.e. difference 
         between local time and timezone time)
-    [ ] Make sure to write on 'ankabut that it's calibrated to Toronto's latitude
+    [x] Make sure to write on lawhat that it's calibrated to Toronto's latitude
+[ ] Put RA/DE grid lines on 'ankabut?
 
 OTHER
 [ ] Write README/CONTRIBUTING/LICENSE
