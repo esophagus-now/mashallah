@@ -367,14 +367,16 @@ end
 ----------------------------
 
 -- What a pain... we should really ditch DST. This is gonna be a bit less generalized.
+hour_shift = -360/24 -- deg
 
 -- afaik the rule for DST is that it starts on the second Sunday of March and ends on
 -- the first Sunday of November. So the earliest it could possibly start is March 8th
 -- and the latest it could possible end is November 6th. 
 
-hour_shift = -360/24 -- deg
-
-dst_first_day = months[1][2] + months[2][2] + 8
+-- MM Mar 9 / 2024: Set the dst_start_day to just be March 1st. This makes it a lot
+-- easier to read the DST scale without me having to a bunch of ugly code. P.S. today
+-- is the last day of standard time; DST starts tomorrow at 2am. Go figure.
+dst_first_day = months[1][2] + months[2][2]
 dst_last_day  = 6
 for i = 1,10 do dst_last_day = dst_last_day + months[i][2] end
 
