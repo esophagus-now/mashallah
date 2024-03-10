@@ -137,7 +137,7 @@ for az = 0,359,(360/24) do
     segs = fit_function(
         function(a) 
             return {
-                remap_x(theta(azimuth_line(a,az,latitude)) + 180),
+                remap_x(theta(azimuth_line(a,az,latitude)) + 180), -- FIXME: why is there a +180 here?
                 remap_y(phi  (azimuth_line(a,az,latitude))) 
             }
         end,
@@ -146,6 +146,53 @@ for az = 0,359,(360/24) do
     )
     print(", used ", #segs, "curve segments")
     str1 = str1 .. segs_to_svg(segs, laser_kerf, false) .. "\n"
+
+    local label_text
+    local label_placement = 0
+    if math.abs(az - 180) < 1e-3 then
+        -- Special case for North azimuth line: draw it
+        -- at the other end
+        label_placement = 80
+    end
+    
+    local label_pos_ra = theta(azimuth_line(label_placement,az,latitude)) + 180 -- FIXME: why is there a +180 here?
+    local label_pos_de = phi  (azimuth_line(label_placement,az,latitude))
+
+    local label_alignment = "middle"
+    if az > 1e-3 and az < (180-1e-3) then
+        label_alignment = "end"
+    elseif az > (180+1e-3) and az < (360-1e-3) then
+        label_alignment = "start"
+    end
+
+    -- FIXME: why did I have to do 180-az???
+    local label_text = string.format("%.0f", angle_clamp(180-az))
+    -- Some special cases just for fun
+    if label_text == "0"   then label_text = "N"  end
+    if label_text == "45"  then label_text = "NE" end
+    if label_text == "90"  then label_text = "E"  end
+    if label_text == "135" then label_text = "SE" end
+    if label_text == "180" then label_text = "S"  end
+    if label_text == "225" then label_text = "SW" end
+    if label_text == "270" then label_text = "W"  end
+    if label_text == "315" then label_text = "NW" end
+
+    local label_size = 1.4 -- mm 
+    local label_weight = "normal"
+    if math.floor(180-az + 0.5) % 45 == 0 then
+        label_size = 1.8 -- mm
+        label_weight = "bolder"
+    end
+    
+    str1 = str1 .. string.format([[
+        <text x="%f" y="%f" fill="black" font-family="Helvetica,sans-serif" font-size="%f" font-weight="%s" alignment-baseline="hanging" text-anchor="%s">%s</text>
+        ]],
+        remap_x(label_pos_ra), remap_y(label_pos_de) + 0.2, -- nudge down
+        label_size,
+        label_weight,
+        label_alignment,
+        label_text
+    )
 end
 
 for el = 0,81,10 do
@@ -243,7 +290,7 @@ end
 --------------------------------------
 
 str1 = str1 .. string.format([[
-    <text font-family="Helvetica, sans-serif" font-size="1.4" x="%f" y="%f" text-anchor="middle" alignment-baseline="ideographic">Calibrated for Toronto (43.7˚ N, 79.4˚ W, UTC-5)</text>
+    <text font-family="Helvetica, sans-serif" font-size="1.4" x="%f" y="%f" text-anchor="middle" alignment-baseline="ideographic">Calibrated for Toronto (43.7˚ N, -79.4˚ W, UTC-5)</text>
 ]],
     draw_xoff + draw_width/2, draw_yoff+draw_height
 )
