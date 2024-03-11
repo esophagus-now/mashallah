@@ -246,8 +246,9 @@ str1 = str1 .. string.format([[
 time_zone_offset = angle_clamp(longitude + time_zone*(360/24)) -- degrees
 degrees_per_min = -360/(24*60) -- hmmm... needed to negate this?
 
-hour_line_height   = dst_scale_y - time_of_day_scale_y -- mm
-minute_tick_height = math.abs(hour_line_height)/3 -- mm
+label_size         = 1.4 -- mm
+hour_tick_height   = (dst_scale_y - time_of_day_scale_y - label_size - 0.1)/2 -- mm
+minute_tick_height = hour_tick_height*0.75 -- mm
 
 for i = 0,23 do
     local hour_num = i%12
@@ -255,18 +256,30 @@ for i = 0,23 do
 
     local hour_str = tostring(hour_num)
     if hour_num == 12 then
-        hour_str = hour_str .. ((i<12) and "am" or "pm")
+        hour_str = ((i<12) and "M" or "Noon")
+    elseif i<10 then
+        hour_str = hour_str .. "am"
+    elseif i>12 and i<22 then
+        hour_str = hour_str .. "pm"
     end
 
     local hour_angle = angle_clamp(i*60*degrees_per_min + time_zone_offset)
 
+    local label_anchor = "middle"
+    local label_base_align = "middle"
+    
     str1 = str1 .. string.format([[
-        <path d="M %f,%f v %f" stroke-width="%f" stroke="black" />
-        <text x="%f" y="%f" alignment-baseline="ideographic" font-family="Helvetica, sans-serif" font-size="1.4" text-anchor="middle">%s</text>
+        <path d="M %f,%f v %f" stroke-width="%f" stroke-linecap="round" stroke="black" />
+        <path d="M %f,%f v %f" stroke-width="%f" stroke-linecap="round" stroke="black" />
+        <text x="%f" y="%f" text-anchor="%s" alignment-baseline="%s" font-family="Helvetica, sans-serif" font-size="%f">%s</text>
     ]],
-        remap_x(hour_angle), time_of_day_scale_y, hour_line_height,
+        remap_x(hour_angle), time_of_day_scale_y, hour_tick_height,
         laser_kerf,
-        remap_x(hour_angle), time_of_day_scale_y,
+        remap_x(hour_angle), dst_scale_y, -hour_tick_height,
+        laser_kerf,
+        remap_x(hour_angle), (time_of_day_scale_y+dst_scale_y)/2,
+        label_anchor, label_base_align,
+        label_size,
         hour_str
     )
 
@@ -274,8 +287,8 @@ for i = 0,23 do
     for j = 10,50,10 do
         local minute_angle = angle_clamp(hour_angle + j*degrees_per_min)
         str1 = str1 .. string.format([[
-            <path d="M %f,%f v %f" stroke-width="%f" stroke="black" stroke-linecap="round"/>
-            <path d="M %f,%f v %f" stroke-width="%f" stroke="black" stroke-linecap="round"/>
+            <path d="M %f,%f v %f" stroke-width="%f" stroke="black" stroke-linecap="butt"/>
+            <path d="M %f,%f v %f" stroke-width="%f" stroke="black" stroke-linecap="butt"/>
         ]],
             remap_x(minute_angle), time_of_day_scale_y, minute_tick_height,
             laser_kerf,

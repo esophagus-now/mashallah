@@ -11,10 +11,10 @@ sidereal_year = 365.25 -- days
 ------------------------
 -- Drawing parameters --
 ------------------------
-total_width  = 91.9 -- mm
-total_height = 53.8 -- mm
-draw_width  = 85.9 -- mm
-draw_height = 47.8 -- mm
+total_width  = 85.60 -- mm
+total_height = 53.98 -- mm
+draw_width  = total_width - 3 -- mm
+draw_height = draw_width*total_height/total_width -- mm
 
 draw_xoff = (total_width  - draw_width )/2
 draw_yoff = (total_height - draw_height)/2
@@ -56,8 +56,8 @@ dot_size = (1/printer_dpi)*25.4 -- mm
 -- The Mean Sun scale and Sidereal Time scale have to
 -- line up. Together they determine the time of day.
 -- Also, we need the Daylight Savings scale to line up
-time_of_day_scale_y = draw_yoff + draw_height - 8 -- mm
-dst_scale_y = time_of_day_scale_y + 2.5 -- mm
+time_of_day_scale_y = draw_yoff + draw_height - 9 -- mm
+dst_scale_y = time_of_day_scale_y + 4 -- mm
 
 
 ----------------------
