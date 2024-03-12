@@ -48,12 +48,11 @@ f:write(string.format([[
         total_width, total_height
 ))
 
--- For my own sake, and also because ponoko gets confused
--- without an outline, draw an outline
+-- To help me cut out the pieces, draw lines on the cuts
 f:write(string.format([[
-        <rect x="0" y="0" width="%f" height="%f" fill="none" stroke="pink" stroke-width="%f" />
+        <path d="M 0,0 h %f m 0,%f h -%f" fill="none" stroke="pink" stroke-width="%f" />
 ]],
-        total_width, total_height,
+        total_width, total_height, total_width,
         laser_kerf
 ))
 
