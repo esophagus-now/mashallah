@@ -1,28 +1,39 @@
 HOW TO USE THE STAR CARD
 
-The transparent sheet is the Lawhat. On it, the curved grid lines are the Local Sky, and the time line is the Time Scale. 
+The transparent sheet is the Lawhat. On it, the curved grid lines are the Local Sky, and they represent the sky above your head. The bottom horseshoe-shaped curve is the horizon, and the smallest oval is 80 degrees elevation. The "spokes" represent compass directions (to be exact, they represent geographic bearings). The time line below the Local Sky is the Time Scale.
 
-The map of stars is the 'Ankabut. The curved line marked with dates is the Ecliptic, and straight line with dates is the Mean Sun Scale. A portion of the Mean Sun Scale is shifted: this is the Daylight Savings Scale. (Daylight Savings Time is ridiculous but we're stuck with it).
+The map of stars is the 'Ankabut. The curved line marked with dates is the Ecliptic, and straight line with dates is the Mean Sun Scale. A portion of the Mean Sun Scale is shifted: this is the Daylight Savings Scale.
 
-Keep the top and bottom edges of these two cards aligned as you slide the Lawhat left/right over the 'Ankabut. Line up the time of day on the Sidereal Time Scale with the time of year on the Mean Sun Scale (take care to select the right portion based on Daylight Savings Time). The Local Sky grid shows the position of stars in the sky at the given time. The Sun's position in the sky changes from day to day, and is shown by the date marks on the Ecliptic.
+Keep the top and bottom (i.e. wide) edges of these two cards aligned as you slide the Lawhat left/right over the 'Ankabut. Line up the time of day on the Time Scale with the time of year on the Mean Sun Scale (or, in summer months, with the Daylight Savings Scale). The Local Sky grid shows the position of stars in the sky at the given time. The Sun's position in the sky changes from day to day, and is shown by the date marks on the Ecliptic.
 
-EXAMPLE 1: It is 11:50 pm on November 22nd. Where is Deneb?
+
+EXAMPLE 1: When will the Sun rise and set on September 21st?
+
+September is in Daylight Savings Time, so use the Daylight Savings Scale. For sunrise, align the Eastern horizon with September 21 on the ecliptic, and read the time of day on the Time Scale above September 21st on the Daylight Savings scale (7:10am). For sunset, repeat using the Western horizon (7:10pm).
+
+Do you remember? That the 21st night of September is the autumn solstice, where every place on Earth experiences 12 hours of daylight.
+
+EXAMPLE 2: It is 11:50 pm on November 22nd. Where is Orion?
 
 In late November, we don't use Daylight Savings Time, so use the Mean Sun Scale. Line up 11:50 pm on the Time Scale with November 22nd on the Mean Sun Scale. 
 
 (picture)
 
-
-EXAMPLE 2: When will the Sun rise and set on September 21st?
-
-September is in Daylight Savings Time, so use the Daylight Savings Scale. For sunrise, align the Western horizon with September 21 on the ecliptic, and read the time of day on the Time Scale above September 21st on the Daylight Savings scale. For sunset, repeat using the Eastern horizon.
+Orion is in the South-Eastern direction, between 30 and 50 degrees above the horizon.
 
 
 
-EXAMPLE 3: In which months is Orion visible?
+EXAMPLE 3: In which months is Sirius visible?
+
+Sirius is the bright star "below and to the left" of Orion. It is visible when it is above the horizon and the Sun is below the horizon. Place Sirius just above the Eastern horizon and note the portions of the Ecliptic that are below the horizon (Aug 7 - Feb 1). Now place Sirius just above the Western horizon and note the portions of the Ecliptic that are below the horizon (Nov 25 - May 17). Sirius is visible at some point during the night in either of these two ranges. So, it is visible from Aug 7 to May 17 (or, to put it differently, Sirius cannot be seen between May 18 and Aug 6).
+
+
+EXAMPLE 4: In which months is Polaris visible?
+
+This is kind of a trick question. Polaris is always in the Local Sky, so it is always visible on any given night. The same is true for any star that lies in the "top band" of the Local Sky above where the horizon line meets the edges of the Lawhat. For example, the Big Dipper is visible year-round as well. 
 
 
 
 CREDITS
 
-Designed by Marco Merlini in 2023/2024. Star data from Yale BSC. Ecliptic dates from a formula by Alejandro Jenkins. Constellation art from Dominic Ford. 
+Designed by Marco Merlini in 2023/2024. Star data from the Berkely Star Catalogue. Ecliptic dates from a formula by Alejandro Jenkins. Constellation art from Dominic Ford. 
