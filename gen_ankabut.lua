@@ -182,21 +182,6 @@ function true_anomaly(d,mean)
     return math.deg(theta_E)
 end
 
-months = {
-    {"Ja", 31},
-    {"Fe", 28},
-    {"Mr", 31},
-    {"Ap", 30},
-    {"May", 31},
-    {"Jn", 30},
-    {"Jl", 31},
-    {"Au", 31},
-    {"Se", 30},
-    {"Oc", 31},
-    {"No", 30},
-    {"De", 31}
-}
-
 d = 0
 for _,m in ipairs(months) do
     local ta = true_anomaly(d)

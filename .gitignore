@@ -4,3 +4,4 @@ out
 replit.nix
 *.draw
 *~
+.local

@@ -111,9 +111,11 @@ end
 -- are unique and "in order". Returns a normalized direction.
 -- My intuition tells me you just lerp the two secant slopes
 function center_tangent(p, idx)
-    assert(idx > 1 and idx < #p)
-    local dp1 = p[idx]   - p[idx-1]
-    local dp2 = p[idx+1] - p[idx]
+    assert(idx >= 1 and idx <= #p)
+    local left_idx  = (idx == 1 ) and #p or idx-1
+    local right_idx = (idx == #p) and 1  or idx+1
+    local dp1 = p[idx]       - p[left_idx]
+    local dp2 = p[right_idx] - p[idx]
     local dt1 = dp1:norm()
     local dt2 = dp2:norm()
     assert(dt1>1e-8 and dt2>1e-8, "While approximating center tangent: points are too close together")

@@ -45,7 +45,7 @@ end
 laser_kerf = 0.2 -- mm
 
 -- Minimum dot size on printer I'm using
-printer_dpi = 300 -- DPI
+printer_dpi = 600 -- DPI
 dot_size = (1/printer_dpi)*25.4 -- mm
 
 
@@ -59,6 +59,20 @@ dot_size = (1/printer_dpi)*25.4 -- mm
 time_of_day_scale_y = draw_yoff + draw_height - 9 -- mm
 dst_scale_y = time_of_day_scale_y + 4 -- mm
 
+months = {
+    {"Ja", 31},
+    {"Fe", 28},
+    {"Mr", 31},
+    {"Ap", 30},
+    {"May", 31},
+    {"Jn", 30},
+    {"Jl", 31},
+    {"Au", 31},
+    {"Se", 30},
+    {"Oc", 31},
+    {"No", 30},
+    {"De", 31}
+}
 
 ----------------------
 -- Helper functions --

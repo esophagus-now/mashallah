@@ -2,7 +2,7 @@ HOW TO USE THE STAR CARD
 
 The transparent sheet is the Lawhat. On it, the curved grid lines are the Local Sky, and they represent the sky above your head. The bottom horseshoe-shaped curve is the horizon, and the smallest oval is 80 degrees elevation. The "spokes" represent compass directions (to be exact, they represent geographic bearings). The time line below the Local Sky is the Time Scale.
 
-The map of stars is the 'Ankabut. The curved line marked with dates is the Ecliptic, and straight line with dates is the Mean Sun Scale. A portion of the Mean Sun Scale is shifted: this is the Daylight Savings Scale.
+The map of stars is the 'Ankabut. The curved line marked with dates is the Ecliptic, and the straight line with dates is the Mean Sun Scale. A portion of the Mean Sun Scale is shifted: this is the Daylight Savings Scale.
 
 Keep the top and bottom (i.e. wide) edges of these two cards aligned as you slide the Lawhat left/right over the 'Ankabut. Line up the time of day on the Time Scale with the time of year on the Mean Sun Scale (or, in summer months, with the Daylight Savings Scale). The Local Sky grid shows the position of stars in the sky at the given time. The Sun's position in the sky changes from day to day, and is shown by the date marks on the Ecliptic.
 
