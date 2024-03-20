@@ -5,3 +5,5 @@ replit.nix
 *.draw
 *~
 .local
+*.png
+*.pdf
