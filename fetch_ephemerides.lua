@@ -8,11 +8,19 @@ if test and not arg[1] then
     os.exit(1)
 end
 
+if not package.path:match"%./%?%.lua" then
+    package.path = package.path .. ";./?.lua"
+end
+require"common"
 
-bodies = {199, 299, 399, 499,  599,   699}
-years =  { 87, 224, 364, 686, 4333, 10756} -- days, rounded down. 
--- ^^ I got this info using the horizons telnet i/f
+bodies = {199, 299, 399, 499, 599, 699}
 
+-- In days, rounded down. This data (which we're deriving from
+-- the table in common.lua) is from the horizons telnet i/f
+years = {}
+for i,v in ipairs(sidereal_orbital_periods) do
+    years[i] = math.floor(v[2])
+end
 
 params = {
     {"COMMAND", "@body@"}, --We'll fill this in for each body in the list

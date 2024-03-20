@@ -43,13 +43,17 @@
 [x] Try out orrery nomogram idea
     [ ] is there any clever transform we can apply that would let us 
         place things in a nicer scale? Probably not.
-[ ] Figure out a solution for including Jupiter and Saturn
+[x] Figure out a solution for including Jupiter and Saturn
     -> Maybe having two separate nomograms 
-[ ] If I do keep the orrery nomogram, I really need to improve the
+[/] If I do keep the orrery nomogram, I really need to improve the
     readability and aesthetics
+    [ ] Need to add in planet labels
+    [ ] For Jupiter/Saturn try to vary tick lengths to make it easier
+        to read months
+[ ] Do the date addition slide rule
+    [ ] 
 [ ] Figure out how to get double-sided prints on card
     [ ] Need reference card and orrery on backside
-[ ] Do the date addition slide rule?
 
 OTHER
 [ ] Write README/CONTRIBUTING/LICENSE

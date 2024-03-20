@@ -6,7 +6,17 @@ axial_tilt = 23.44 -- degrees, US Naval Observatory 2023
 latitude = 43.65  -- degrees, for Toronto
 longitude = 79.38 -- degrees, for Toronto
 time_zone = -5    -- hours, for Toronto
-sidereal_year = 365.25 -- days
+sidereal_year = 365.25636 -- 24hr days, Earth
+
+-- Data obtained from NASA's horizons system. Units in (24hr) days
+sidereal_orbital_periods = {
+    {"Mercury", 87.969257 },
+    {"Venus",   224.700799},
+    {"Earth",   365.25636 },
+    {"Mars",    686.98    },
+    {"Jupiter", 4332.589  },
+    {"Saturn",  10755.698 },
+}
 
 ------------------------
 -- Drawing parameters --
@@ -45,7 +55,7 @@ end
 laser_kerf = 0.2 -- mm
 
 -- Minimum dot size on printer I'm using
-printer_dpi = 600 -- DPI
+printer_dpi = 300 -- DPI
 dot_size = (1/printer_dpi)*25.4 -- mm
 
 

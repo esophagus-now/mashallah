@@ -19,8 +19,8 @@ files = {
     "ephemerides/299.txt",
     "ephemerides/399.txt",
     "ephemerides/499.txt",
-    --"ephemerides/599.txt",
-    --"ephemerides/699.txt"
+    "ephemerides/599.txt",
+    "ephemerides/699.txt"
 }
 
 orbits = {}
@@ -59,37 +59,74 @@ for _,file in ipairs(files) do
 end
 
 
----------------------------------------------------
--- Shift+scale all the orbits to fit in the card --
----------------------------------------------------
+--------------------------------------------------
+-- Shift+scale inner planets to fit on the left --
+--------------------------------------------------
 
-sun_pos = vec{draw_xoff+draw_width/2,draw_yoff+draw_height/2}
-orbit_pt_scale = 1e8 -- start big and shrink as needed
+inner_planets = {}
+inner_planets.Mercury = true
+inner_planets.Venus = true
+inner_planets.Earth = true
+inner_planets.Mars = true
 
-assert(draw_height <= draw_width, "This code assumes we're limited by height")
+outer_planets = {}
+outer_planets.Saturn = true
+outer_planets.Jupiter = true
+outer_planets.Earth = true
+
+-- Leave some space at the bottom for our orbits slide rule
+sun_pos_inner = vec{draw_xoff+draw_width/4,draw_yoff+draw_height/2 - 4}
+sun_pos_outer = vec{draw_xoff+3*draw_width/4,draw_yoff+draw_height/2 - 4}
+orbit_pt_scale_inner = 1e8 -- start big and shrink as needed
+orbit_pt_scale_outer = 1e8 -- start big and shrink as needed
+
+assert(draw_width/2 <= draw_height, "This code assumes we're limited by halfwidth")
+
+orbits_inner = {}
+orbits_outer = {}
 
 -- Not super efficient but who cares... just iterate through all points.
 -- We could do better by only checking the outermost orbit...
 for planet, orbit_pts in pairs(orbits) do
     for _,pt in ipairs(orbit_pts) do
         local scale = math.abs(
-            (draw_height/2)/pt[2]
+            -- Leave 2.5mm of space for tick marks and text
+            (draw_width/4 - 2.5)/pt[1]
         )
-        if pt[2] ~= 0 and scale < orbit_pt_scale then
-            orbit_pt_scale = scale
+        if inner_planets[planet] then
+            if pt[2] ~= 0 and scale < orbit_pt_scale_inner then
+                orbit_pt_scale_inner = scale
+            end
+        end
+        if outer_planets[planet] then
+            if pt[2] ~= 0 and scale < orbit_pt_scale_outer then
+                orbit_pt_scale_outer = scale
+            end
         end
     end
 end
 
 for planet, orbit_pts in pairs(orbits) do
-    local shifted_scaled_pts = {}
-    for _,pt in ipairs(orbit_pts) do
-        table.insert(
-            shifted_scaled_pts, 
-            sun_pos + orbit_pt_scale*pt
-        )
+    if inner_planets[planet] then
+        local shifted_scaled_pts = {}
+        for _,pt in ipairs(orbit_pts) do
+            table.insert(
+                shifted_scaled_pts, 
+                sun_pos_inner + orbit_pt_scale_inner*pt
+            )
+        end
+        orbits_inner[planet] = shifted_scaled_pts
     end
-    orbits[planet] = shifted_scaled_pts
+    if outer_planets[planet] then
+        local shifted_scaled_pts = {}
+        for _,pt in ipairs(orbit_pts) do
+            table.insert(
+                shifted_scaled_pts, 
+                sun_pos_outer + orbit_pt_scale_outer*pt
+            )
+        end
+        orbits_outer[planet] = shifted_scaled_pts
+    end
 end
 
 --------------------------------
@@ -123,38 +160,63 @@ f:write(string.format([[
 ))
 
 
-----------------------
--- Draw dot for Sun --
-----------------------
+-----------------------
+-- Draw dots for Sun --
+-----------------------
 
 f:write(string.format([[
     <circle cx="%f" cy="%f" r="%f" />
 ]],
-    sun_pos[1],
-    sun_pos[2],
+    sun_pos_outer[1],
+    sun_pos_outer[2],
     laser_kerf
 ))
 
+f:write(string.format([[
+    <circle cx="%f" cy="%f" r="%f" />
+]],
+    sun_pos_inner[1],
+    sun_pos_inner[2],
+    laser_kerf
+))
 -----------------------
 -- Draw orbit curves --
 -----------------------
 
-curves = {}
+curves_inner = {}
+curves_outer = {}
 
-for planet,orbit_pts in pairs(orbits) do
+for planet,orbit_pts in pairs(orbits_inner) do
     io.write("Working on " .. planet .. "'s orbit")
     io.flush()
     local segs = fit_curve(
         orbit_pts,
-        dot_size,
+        laser_kerf/10,
         nil, nil,
         true
     )
     print(", used ", #segs, "curve segments")
-    curves[planet] = segs
+    curves_inner[planet] = segs
 end
 
-for planet,segs in pairs(curves) do
+for planet,orbit_pts in pairs(orbits_outer) do
+    io.write("Working on " .. planet .. "'s orbit")
+    io.flush()
+    local segs = fit_curve(
+        orbit_pts,
+        laser_kerf/10,
+        nil, nil,
+        true
+    )
+    print(", used ", #segs, "curve segments")
+    curves_outer[planet] = segs
+end
+
+for planet,segs in pairs(curves_inner) do
+    f:write(segs_to_svg(segs, laser_kerf, true, "black") .. "\n")
+end
+
+for planet,segs in pairs(curves_outer) do
     f:write(segs_to_svg(segs, laser_kerf, true, "black") .. "\n")
 end
 
@@ -168,7 +230,7 @@ end
 -- label. If the tick length is zero, then we shouldn't
 -- draw anything. If the string is nil, we shouldn't 
 -- include any text
-function tick_info(d, ignore_2024_as_leap_year)
+function tick_info(d, ignore_2024_as_leap_year, less, much_less)
     local year = 2024
     
     while true do
@@ -211,35 +273,90 @@ function tick_info(d, ignore_2024_as_leap_year)
         -- Long tick mark
         if month == 1 then
             -- Print year and month
-            return 0.8, "Ja'"..tostring(year%100)
+            local ret = "'"..tostring(year%100)
+            return 0.8, ret
+        elseif much_less then
+            return 0.6, ""
         else
             return 0.8, months[month][1]
         end
+    elseif less then
+        return 0,"" -- Only print months/years if tick marks turned down
     elseif d == 15 then
-        -- Short tick mark and "15"
-        return 0.6, "15"
-    elseif d%5 == 0 then
-        -- Short tick mark
+        -- Medium tick mark
         return 0.6, ""
-    else 
+    elseif d%5 == 0 then
+        -- Special case: don't bother placing a tick mark for
+        -- d == 30 if this is a short month
+        if 
+            d == 30 and (
+                month == 4 or
+                month == 6 or
+                month == 9 or
+                month == 11
+            )
+        then
+            return 0, ""
+        end
+        -- Short tick mark
+        return 0.4, ""
+    else
         -- No tick mark
         return 0, ""
     end
 end
 
-for planet, orbit_pts in pairs(orbits) do
+-- Probably a better way to do this, but choose between 
+-- left/middle/right for vertical/horizontal axes by
+-- checking which octant the tangent lies in. For 
+-- simplicity just return a string that we'll paste
+-- into the SVG text attributes
+function tick_text_anchor(tangent)
+    local angle = angle_clamp(math.deg(atan2(tangent[2],tangent[1])) + 22.5)
+    if angle <= 45 then
+        return [[text-anchor="start" alignment-baseline="central"]]
+    elseif angle <= 90 then
+        return [[text-anchor="start" alignment-baseline="hanging"]]
+    elseif angle <= 135 then
+        return [[text-anchor="middle" alignment-baseline="hanging"]]
+    elseif angle <= 180 then
+        return [[text-anchor="end" alignment-baseline="hanging"]]
+    elseif angle <= 225 then
+        return [[text-anchor="end" alignment-baseline="central"]]
+    elseif angle <= 270 then
+        return [[text-anchor="end" alignment-baseline="ideographic"]]
+    elseif angle <= 315 then
+        return [[text-anchor="middle" alignment-baseline="ideographic"]]
+    else
+        return [[text-anchor="start" alignment-baseline="ideographic"]]
+    end
+end
+
+for planet, orbit_pts in pairs(orbits_inner) do
     local is_earth = (planet == "Earth")
+    local less = false
+    local much_less = false
     for d,pt in ipairs(orbit_pts) do
-        local tick_len, tick_str = tick_info(d, is_earth)
+        local tick_len, tick_str = tick_info(d, is_earth, less, much_less)
         if tick_len > 0 then
             local tangent = center_tangent(orbit_pts,d)
+            -- UGLY UGLY UGLY the orbits don't return exactly to their
+            -- starting location, and this is messing up the tangent
+            -- calculation for the very first/last point. So add a special
+            -- case for that
+            if d == 1 then
+                tangent = left_tangent(orbit_pts)
+            elseif d == #orbit_pts then
+                tangent = right_tangent(orbit_pts)
+            end
+            
             -- Perpendicular to tangent
             local tick_dir = vec{
                 -tangent[2],
                 tangent[1]
             }
-            -- Make tick_dir point towards Sun
-            if (tick_dir..(pt-sun_pos)) > 0 then
+            -- Make tick_dir point away from Sun
+            if (tick_dir..(pt-sun_pos_inner)) < 0 then
                 tick_dir = -1*tick_dir
             end
             tick_end = pt + tick_dir*tick_len
@@ -252,15 +369,146 @@ for planet, orbit_pts in pairs(orbits) do
             ))
             if tick_str and #tick_str > 0 then
                 f:write(string.format([[
-                    <text x="%f" y="%f" font-size="%f" font-family="Helvetica,sans-serif" fill="green">%s</text>
+                    <text x="%f" y="%f" font-size="%f" %s font-family="Helvetica,sans-serif" fill="green">%s</text>
                 ]],
                     tick_end[1], tick_end[2],
                     1.4, -- mm
+                    tick_text_anchor(tick_dir),
                     tick_str
                 ))
             end
         end
     end
+end
+
+for planet, orbit_pts in pairs(orbits_outer) do
+    local is_earth = (planet == "Earth")
+    local less = true
+    local much_less = (planet == "Jupiter") or (planet == "Saturn")
+    for d,pt in ipairs(orbit_pts) do
+        local tick_len, tick_str = tick_info(d, is_earth, less, much_less)
+        if tick_len > 0 then
+            local tangent = center_tangent(orbit_pts,d)
+            -- UGLY UGLY UGLY the orbits don't return exactly to their
+            -- starting location, and this is messing up the tangent
+            -- calculation for the very first/last point. So add a special
+            -- case for that
+            if d == 1 then
+                tangent = left_tangent(orbit_pts)
+            elseif d == #orbit_pts then
+                tangent = right_tangent(orbit_pts)
+            end
+            -- Perpendicular to tangent
+            local tick_dir = vec{
+                -tangent[2],
+                tangent[1]
+            }
+            -- Make tick_dir point away from Sun
+            if (tick_dir..(pt-sun_pos_outer)) < 0 then
+                tick_dir = -1*tick_dir
+            end
+            tick_end = pt + tick_dir*tick_len
+            f:write(string.format([[
+                <path d="M %f,%f L %f,%f" stroke-linecap="round" stroke-width="%f" stroke="black" />
+            ]],
+                pt[1], pt[2],
+                tick_end[1], tick_end[2],
+                laser_kerf
+            ))
+            if tick_str and #tick_str > 0 then
+                f:write(string.format([[
+                    <text x="%f" y="%f" font-size="%f" %s font-family="Helvetica,sans-serif" fill="green">%s</text>
+                ]],
+                    tick_end[1], tick_end[2],
+                    1.4, -- mm
+                    tick_text_anchor(tick_dir),
+                    tick_str
+                ))
+            end
+        end
+    end
+end
+
+-----------------------
+-- Label the planets --
+-----------------------
+
+-- Kinda dumb but whatever: for each planet 
+
+-------------------------
+-- Place calendar line --
+-------------------------
+
+-- Uhhh maybe we don't need to do this, right? We already have
+-- a calendar line on the front side for the Mean Sun Scale.
+-- Well, whatever, it's kind of nice anyway, and it's more intuitive
+-- if the calendar goes left-to-right.
+
+f:write(string.format([[
+    <path d="M %f,%f h %f" stroke="green" stroke-width="%f" />
+]],    
+    draw_xoff, dst_scale_y, draw_width,
+    laser_kerf
+))
+
+degrees_per_day = 360/sidereal_year
+-- Copy-pasted and edited... so sue me
+d = 0
+for i,m in ipairs(months) do
+    local tick_pos = vec{
+        -- We want the dates to increase towards the right
+        remap_x(angle_clamp(360 - degrees_per_day*d)),
+        dst_scale_y
+    }
+    local tick_height = 0.8 -- mm
+
+    f:write(string.format([[
+        <path stroke="green" stroke-width="%f" stroke-linecap="round" d="M %f,%f v %f" />
+    ]],
+        2*dot_size,
+        tick_pos[1], tick_pos[2], tick_height -- mm
+    ))
+
+    -- Ugly special case for orrery calendar line: the January label
+    -- shouldn't spill over the side
+    local ab = (i==1) and "ideographic" or "central"
+    f:write(string.format([[
+        <text x="%f" y="%f" font-size="%f" text-anchor="start" alignment-baseline="%s" font-family="Bell Centennial, Helvetica, sans-serif" transform="rotate(90)" transform-origin="%f %f" fill="green">%s</text>
+    ]],
+        tick_pos[1], tick_pos[2] + tick_height + 0.2, 
+        1.8, -- mm, 6pt font
+        ab,
+        tick_pos[1], tick_pos[2] + tick_height + 0.2,
+        m[1]
+    ))
+
+    for d2 = 4,m[2]-1,5 do
+        local day_num = d2+1
+        local tick_height = 0.6 -- mm
+        local tick_pos = vec{
+            remap_x(angle_clamp(360 - degrees_per_day*(d+d2))),
+            dst_scale_y
+        }
+        f:write(string.format([[
+            <path stroke="green" stroke-width="%f" stroke-linecap="round" d="M %f,%f v %f" />
+        ]],
+            2*dot_size,
+            tick_pos[1], tick_pos[2], tick_height -- mm
+        ))
+
+        if day_num == 15 then
+            f:write(string.format([[
+                <text x="%f" y="%f" font-size="%f" text-anchor="start" alignment-baseline="central" font-family="Bell Centennial, Helvetica, sans-serif" transform="rotate(90)" transform-origin="%f %f" fill="green">%s</text>
+            ]],
+                tick_pos[1], tick_pos[2] + tick_height, 
+                1.4, -- mm, 4pt
+                tick_pos[1], tick_pos[2] + tick_height,
+                tostring(day_num)
+            ))
+        end
+    end
+
+    d = d + m[2]
 end
 
 

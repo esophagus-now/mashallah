@@ -4,7 +4,7 @@ API SOURCE: NASA/JPL Horizons API
 
 
 *******************************************************************************
-Ephemeris / API_USER Sun Mar 17 19:04:30 2024 Pasadena, USA      / Horizons
+Ephemeris / API_USER Wed Mar 20 07:11:14 2024 Pasadena, USA      / Horizons
 *******************************************************************************
 Target body name: Mars (499)                      {source: mar097}
 Center body name: Sun (10)                        {source: DE441}
