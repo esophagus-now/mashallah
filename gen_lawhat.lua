@@ -11,10 +11,12 @@ require"common"
 
 -- Coords in degrees, timezone in hours
 other_cities = {
-    ["Fredericton"] = {45.96, 66.64, -4}, -- From Google autoresult (timezone from memory)
-    ["Montréal"]    = {45.50, 73.57, -5},
-    ["Halifax"]     = {44.65, 63.57, -4},
-    ["Ottawa"]      = {45.42, 75.70, -5}
+    ["Fredericton"] = {45.96,  66.64, -4}, -- From Google autoresult (timezone from memory)
+    ["Montréal"]    = {45.50,  73.57, -5},
+    ["Halifax"]     = {44.65,  63.57, -4},
+    ["Ottawa"]      = {45.42,  75.70, -5},
+    ["Inuvik"]      = {68.34, 133.72, -6}, -- Wikipedia
+    ["Bogotá"]      = { 4.71,  74.07, -5}, -- Wikipedia
 }
 
 city_name = "Toronto"
@@ -229,7 +231,15 @@ end
 for el = 0,81,10 do
     io.write("Working on elevation line ", el)
     io.flush()
-    local closed = (el+latitude) > 90
+    -- The elevation line is closed if its highest declination
+    -- is less than 90. FIXME: I don't think this works in the
+    -- Southern hemisphere. (But the whole design needs to be
+    -- adjusted for the Southern hemisphere so that the time
+    -- scales don't clobber the constellations you would care
+    -- about)
+    local highest_declination =  90 + (latitude-el)
+    
+    local closed = highest_declination < 90
     segs = fit_function(
         function(a) 
             return {
