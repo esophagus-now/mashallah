@@ -5,6 +5,37 @@ require"vec"
 require"fit_curve"
 require"common"
 
+-- common.lua provides latitude/longitude/timezone, but
+-- for fun add an argument to the script that will
+-- override them
+
+-- Coords in degrees, timezone in hours
+other_cities = {
+    ["Fredericton"] = {45.96, 66.64, -4}, -- From Google autoresult (timezone from memory)
+    ["Montréal"]    = {45.50, 73.57, -5},
+    ["Halifax"]     = {44.65, 63.57, -4},
+    ["Ottawa"]      = {45.42, 75.70, -5}
+}
+
+city_name = "Toronto"
+
+if other_cities[arg[1]] then
+    city_name = arg[1]
+    latitude, longitude, time_zone = unpack(other_cities[arg[1]])
+elseif arg[1] then
+    error("Unrecognized city name")
+end
+
+calib_str = string.format(
+    "Calibrated for %s (%.1f˚ N, %.1f˚ W, UTC%d)",
+    city_name,
+    latitude, 
+    longitude,
+    time_zone
+)
+
+
+
 -- No idea what to put here. This number is 0.6 arc minutes 
 -- (the typical human visual acuity) times 28 inches (the
 -- nominal arm length). And then divide it by 3 for "good
@@ -303,9 +334,10 @@ end
 --------------------------------------
 
 str1 = str1 .. string.format([[
-    <text font-family="Helvetica, sans-serif" font-size="1.4" x="%f" y="%f" text-anchor="middle" alignment-baseline="ideographic">Calibrated for Toronto (43.7˚ N, -79.4˚ W, UTC-5)</text>
+    <text font-family="Helvetica, sans-serif" font-size="1.4" x="%f" y="%f" text-anchor="middle" alignment-baseline="ideographic">%s</text>
 ]],
-    draw_xoff + draw_width/2, draw_yoff+draw_height
+    draw_xoff + draw_width/2, draw_yoff+draw_height,
+    calib_str
 )
 
 ------------------------
@@ -313,8 +345,8 @@ str1 = str1 .. string.format([[
 ------------------------
 
 str1 = str1 .. "</svg>"
-
-f = io.open("out/lawhat.svg", "wb")
+print("out/lawhat_" .. city_name .. ".svg")
+f = io.open("out/lawhat_" .. city_name .. ".svg", "wb")
 f:write(str1)
 f:flush()
 f = nil

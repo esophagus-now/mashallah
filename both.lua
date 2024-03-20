@@ -4,7 +4,10 @@
 -- edit the transform of the Lawhat group
 
 a = assert(io.open"out/ankabut.svg")
-l = assert(io.open"out/lawhat.svg")
+
+city_name = "Toronto"
+if arg[1] then city_name = arg[1] end
+l = assert(io.open("out/lawhat_"..city_name..".svg"))
 
 b = assert(io.open("out/both.svg", "w"))
 

@@ -7,7 +7,10 @@ require"common"
 -- to send to staples for a test print
 
 a = assert(io.open"out/ankabut.svg")
-l = assert(io.open"out/lawhat.svg")
+
+city_name = "Toronto"
+if arg[1] then city_name = arg[1] end
+l = assert(io.open("out/lawhat_"..city_name..".svg"))
 
 tpa = assert(io.open("out/test_print_ankabut.svg", "w"))
 tpl = assert(io.open("out/test_print_lawhat.svg", "w"))

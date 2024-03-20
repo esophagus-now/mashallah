@@ -114,7 +114,8 @@ function angle_clamp(theta)
     return theta
 end
 
-atan2 = math.atan2 or math.atan
+atan2  = math.atan2 or math.atan
+unpack = unpack or table.unpack
 
 -- Returns angle in degrees for the "theta" part of the spherical
 -- coordinates corresponding to (x,y,z). You could reasonably call
