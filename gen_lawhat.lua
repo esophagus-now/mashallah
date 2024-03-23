@@ -15,7 +15,7 @@ other_cities = {
     ["Montréal"]    = {45.50,  73.57, -5},
     ["Halifax"]     = {44.65,  63.57, -4},
     ["Ottawa"]      = {45.42,  75.70, -5},
-    ["Inuvik"]      = {68.34, 133.72, -6}, -- Wikipedia
+    ["Inuvik"]      = {68.34, 133.72, -7}, -- Wikipedia
     ["Bogotá"]      = { 4.71,  74.07, -5}, -- Wikipedia
 }
 

@@ -147,7 +147,7 @@ f:write(string.format([[
         <path d="M 0,0 h %f m 0,%f h -%f" fill="none" stroke="pink" stroke-width="%f" />
 ]],
         total_width, total_height, total_width,
-        laser_kerf
+        dot_size
 ))
 
 -- For my own sake, add an outline for the safe drawing area
@@ -156,7 +156,7 @@ f:write(string.format([[
 ]],
     draw_xoff, draw_yoff,
     draw_width, draw_height,
-    laser_kerf
+    dot_size
 ))
 
 
@@ -213,11 +213,11 @@ for planet,orbit_pts in pairs(orbits_outer) do
 end
 
 for planet,segs in pairs(curves_inner) do
-    f:write(segs_to_svg(segs, laser_kerf, true, "black") .. "\n")
+    f:write(segs_to_svg(segs, dot_size, true, "black") .. "\n")
 end
 
 for planet,segs in pairs(curves_outer) do
-    f:write(segs_to_svg(segs, laser_kerf, true, "black") .. "\n")
+    f:write(segs_to_svg(segs, dot_size, true, "black") .. "\n")
 end
 
 ---------------------
@@ -365,7 +365,7 @@ for planet, orbit_pts in pairs(orbits_inner) do
             ]],
                 pt[1], pt[2],
                 tick_end[1], tick_end[2],
-                laser_kerf
+                dot_size
             ))
             if tick_str and #tick_str > 0 then
                 f:write(string.format([[
@@ -413,7 +413,7 @@ for planet, orbit_pts in pairs(orbits_outer) do
             ]],
                 pt[1], pt[2],
                 tick_end[1], tick_end[2],
-                laser_kerf
+                dot_size
             ))
             if tick_str and #tick_str > 0 then
                 f:write(string.format([[
@@ -433,7 +433,7 @@ end
 -- Label the planets --
 -----------------------
 
--- Kinda dumb but whatever: for each planet 
+-- TODO
 
 -------------------------
 -- Place calendar line --
@@ -447,17 +447,16 @@ end
 f:write(string.format([[
     <path d="M %f,%f h %f" stroke="green" stroke-width="%f" />
 ]],    
-    draw_xoff, dst_scale_y, draw_width,
+    rule_xoff, dst_scale_y, rule_width,
     laser_kerf
 ))
 
-degrees_per_day = 360/sidereal_year
+mm_per_day = rule_width/sidereal_year
 -- Copy-pasted and edited... so sue me
 d = 0
 for i,m in ipairs(months) do
     local tick_pos = vec{
-        -- We want the dates to increase towards the right
-        remap_x(angle_clamp(360 - degrees_per_day*d)),
+        rule_xoff + mm_per_day*d,
         dst_scale_y
     }
     local tick_height = 0.8 -- mm
@@ -469,15 +468,11 @@ for i,m in ipairs(months) do
         tick_pos[1], tick_pos[2], tick_height -- mm
     ))
 
-    -- Ugly special case for orrery calendar line: the January label
-    -- shouldn't spill over the side
-    local ab = (i==1) and "ideographic" or "central"
     f:write(string.format([[
-        <text x="%f" y="%f" font-size="%f" text-anchor="start" alignment-baseline="%s" font-family="Bell Centennial, Helvetica, sans-serif" transform="rotate(90)" transform-origin="%f %f" fill="green">%s</text>
+        <text x="%f" y="%f" font-size="%f" text-anchor="start" alignment-baseline="central" font-family="Bell Centennial, Helvetica, sans-serif" transform="rotate(90)" transform-origin="%f %f" fill="green">%s</text>
     ]],
         tick_pos[1], tick_pos[2] + tick_height + 0.2, 
         1.8, -- mm, 6pt font
-        ab,
         tick_pos[1], tick_pos[2] + tick_height + 0.2,
         m[1]
     ))
@@ -486,7 +481,7 @@ for i,m in ipairs(months) do
         local day_num = d2+1
         local tick_height = 0.6 -- mm
         local tick_pos = vec{
-            remap_x(angle_clamp(360 - degrees_per_day*(d+d2))),
+            rule_xoff + mm_per_day*(d+d2),
             dst_scale_y
         }
         f:write(string.format([[

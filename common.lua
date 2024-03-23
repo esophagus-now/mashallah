@@ -69,6 +69,11 @@ dot_size = (1/printer_dpi)*25.4 -- mm
 time_of_day_scale_y = draw_yoff + draw_height - 9 -- mm
 dst_scale_y = time_of_day_scale_y + 4 -- mm
 
+-- For the date slide rules, it's nicer if we just have
+-- some spacing on either side
+rule_xoff  = draw_xoff  + 1 -- mm
+rule_width = draw_width - 2 -- mm
+
 months = {
     {"Ja", 31},
     {"Fe", 28},
@@ -83,6 +88,14 @@ months = {
     {"No", 30},
     {"De", 31}
 }
+
+planet_symbols = {}
+planet_symbols.Mercury = "☿"
+planet_symbols.Venus   = "♀"
+planet_symbols.Earth   = "🜨"
+planet_symbols.Mars    = "♂"
+planet_symbols.Jupiter = "♃"
+planet_symbols.Saturn  = "♄"
 
 ----------------------
 -- Helper functions --
