@@ -99,6 +99,8 @@ planet_symbols.Jupiter = "♃"
 planet_symbols.Saturn  = "♄"
 planet_symbols.Moon    = "☽"
 
+mm_per_inch = 25.4 -- Who knew, apparently this is the exact value
+
 ----------------------
 -- Helper functions --
 ----------------------
