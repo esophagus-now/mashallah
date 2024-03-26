@@ -48,11 +48,11 @@ function year_ratio(planet)
     return planet_lut[planet] / planet_lut.Earth
 end
 
-function tick_mark(x, y, h, nudge, lbl, lbr)
+function tick_mark(x, y, h, lbl, lbr)
     f:write(string.format([[
-        <path d="M %f,%f l %f,%f" stroke-width="%f" stroke-linecap="round" stroke="black"/>
+        <path d="M %f,%f v %f" stroke-width="%f" stroke-linecap="round" stroke="black"/>
     ]],
-        x, y, nudge, -h,
+        x, y, -h,
         laser_kerf
     ))
 
@@ -63,7 +63,7 @@ function tick_mark(x, y, h, nudge, lbl, lbr)
         f:write(string.format([[
             <text x="%f" y="%f" alignment-baseline="ideographic" text-anchor="middle" font-family="Helvetica, sans-serif" font-size="1.4">%s</text>
         ]],
-            x+nudge, y - h - 0.2,
+            x, y - h - 0.2,
             lbl
         ))
     else
@@ -71,8 +71,8 @@ function tick_mark(x, y, h, nudge, lbl, lbr)
             <text x="%f" y="%f" text-anchor="end" font-family="Helvetica, sans-serif" font-size="1.4">%s</text>
             <text x="%f" y="%f" text-anchor="start" font-family="Helvetica, sans-serif" font-size="1.4">%s</text>
         ]],
-            x+nudge - 0.2, y - h + 0.1, lbl,
-            x+nudge + 0.2, y - h + 0.1, lbr
+            x - 0.2, y - h + 0.1, lbl,
+            x + 0.2, y - h + 0.1, lbr
         ))
     end
 end
@@ -81,21 +81,44 @@ end
 -- Abrbitrary params for spacing things nicely --
 -------------------------------------------------
 
-scale_height = (draw_height-8)/5 -- mm
+scale_height = (draw_height-4)/7 -- mm
 cur_scale_y = draw_yoff + draw_height - 4 -- mm
 
----------------------
--- Mercury + Venus --
----------------------
+----------------
+-- Moon orbit --
+----------------
 
--- TODO: the Moon?
+-- This is hard to explain... basically, all the other planets
+-- need two steps to find their ecliptic longitude. You first
+-- line up the dates, then shift that line to cross the point 
+-- for the Sun. Instead, the Moon only has one step because it's
+-- orbiting the Earth. So instead of putting the Moon's orbit
+-- in the same ellipses diagram in the orrery, it's easier to
+-- just re-use the date line we're employing with the sliding 
+-- scales. That probably doesn't quite explain it, but I'll
+-- include an example somewhere
+
+-- TODO
+
+--------------------------
+-- Moon, Mercury, Venus --
+--------------------------
 
 -- For planets with an orbital period shorter than Earth's, we
 -- use a layout with multiple indices
 
-for _,planet in ipairs{"Mercury", "Venus"} do
+for _,planet in ipairs{"Moon", "Mercury", "Venus"} do
     local yr = year_ratio(planet)
     assert(yr < 1)
+
+    -- Draw a base line for the tick marks
+    f:write(string.format([[
+        <path d="M %f,%f h %f" stroke-width="%f" stroke="black" />
+    ]],
+        rule_xoff, cur_scale_y,
+        rule_width,
+        laser_kerf
+    ))
 
     local cur = 0
 
@@ -107,21 +130,11 @@ for _,planet in ipairs{"Mercury", "Venus"} do
     while cur < 1 do
         tick_mark(
             cur*rule_width+rule_xoff, cur_scale_y, 2, 
-            0, -- No nudge on indices
             planet_symbols[planet]
         )
         table.insert(marks, cur)
         cur = cur + yr
     end
-
-    -- Draw a base line for the tick marks
-    f:write(string.format([[
-        <path d="M %f,%f h %f" stroke-width="%f" stroke="black" />
-    ]],
-        rule_xoff, cur_scale_y,
-        rule_width,
-        laser_kerf
-    ))
     
     -- Now draw some tick marks. This is all kind of heuristic
     -- and the intention is to get good readability
@@ -129,7 +142,6 @@ for _,planet in ipairs{"Mercury", "Venus"} do
     -- We'll do all the single-year gaps up to 9, then all the
     -- ten year gaps up to 100
     local gap = 1
-    local text_nudge = 0
     while cur < 101 do
         local tick_val = math.floor(cur)
         local tick_pos = cur - tick_val
@@ -138,7 +150,6 @@ for _,planet in ipairs{"Mercury", "Venus"} do
         
         tick_mark(
             rule_width*tick_pos+rule_xoff, cur_scale_y, 1,
-            text_nudge,
             tostring(tick_val)
         )
 
@@ -175,15 +186,6 @@ for _,planet in ipairs{"Mercury", "Venus"} do
         end
 
         cur = winning_pos
-
-        -- Nasty little fixup to try and keep the text "spaced out"
-        local min_spacing = 0.4*#tostring(tick_val+gap) -- mm
-        if math.abs(max_min_dist)*rule_width < min_spacing then
-            text_nudge = min_spacing - math.abs(max_min_dist)
-            if max_min_dist < 0 then text_nudge = -text_nudge end
-        else
-            text_nudge = 0
-        end
         
         assert(math.floor(cur) == tick_val + gap)
     end
@@ -191,9 +193,9 @@ for _,planet in ipairs{"Mercury", "Venus"} do
     cur_scale_y = cur_scale_y - scale_height
 end
 
---------------
--- The rest --
---------------
+---------------------------
+-- Mars, Jupiter, Saturn --
+---------------------------
 
 -- This is where things are more complicated. You have to remember
 -- to subtract an extra year if the left index falls off the scale
@@ -205,16 +207,57 @@ for _,planet in ipairs{"Mars", "Jupiter", "Saturn"} do
     local yr = year_ratio(planet)
     assert(yr > 1)
 
-    -- Put "indices" at far endpoints of card.
+    -- Draw a base line for the tick marks
+    f:write(string.format([[
+        <path d="M %f,%f h %f" stroke-width="%f" stroke="black" />
+    ]],
+        rule_xoff, cur_scale_y,
+        rule_width,
+        laser_kerf
+    ))
 
-    -- Draw base line across whole width of card
+    -- Put in the indices
+    tick_mark(
+        0*rule_width+rule_xoff, cur_scale_y, 2, 
+        planet_symbols[planet]
+    )
+    tick_mark(
+        1*rule_width+rule_xoff, cur_scale_y, 2, 
+        planet_symbols[planet]
+    )
 
-    -- Now find some tick mark positions
-    local tick_posns = {}
+    -- Keep track of existing tick marks. When placing new ones,
+    -- we try to space them out so the text is readable
+    local marks = {0, 1}
+    
+    local cur = yr
 
-    -- Draw and label the ticks.
-    -- Each tick should be labeled with two numbers (see the
-    -- Mars example)
+    -- Now draw some tick marks. This is all kind of heuristic
+    -- and the intention is to get good readability
+
+    -- Here, the minimum increment is larger than 1, so we'll
+    -- try to have "a few small numbers" and "a few big numbers"
+    local min_gap = 1
+    while cur < 101 do
+        local tick_val = math.floor(cur)
+        local tick_pos = cur - tick_val
+
+        table.insert(marks, tick_pos)
+
+        tick_mark(
+            rule_width*tick_pos+rule_xoff, cur_scale_y, 1,
+            tostring(tick_val), tostring(tick_val+1)
+        )
+
+        -- Figure out our desired gap
+        if tick_val >= 10 then min_gap = 10 end
+
+        while math.floor(cur) < tick_val + min_gap do
+            cur = cur + yr
+        end
+
+        assert(math.floor(cur) >= tick_val + min_gap)
+    end
 
     cur_scale_y = cur_scale_y - scale_height
 end

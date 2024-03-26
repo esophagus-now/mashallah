@@ -13,6 +13,7 @@
 [x] Add in constellation line art
     [ ] Prob should add constellation labels too
     [ ] (And maybe label a few stars)
+[ ] Make versions for other cultures' constellations
 [x] Add "time-of-day line" on lawhat somewhere in south sky
     -> A.K.A. Sidereal Time Scale
 [/] Add numbers to lawhat grid
@@ -51,9 +52,12 @@
     [ ] For Jupiter/Saturn try to vary tick lengths to make it easier
         to read months
 [ ] Do the date addition slide rule
-    [ ] 
+    [ ] How to deal with the unreadable mess this is generating...
 [ ] Figure out how to get double-sided prints on card
     [ ] Need reference card and orrery on backside
+[ ] Need a more sane way to produce the PDFs I send for printing
+[ ] Version française
+
 
 OTHER
 [ ] Write README/CONTRIBUTING/LICENSE

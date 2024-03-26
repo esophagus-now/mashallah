@@ -1,0 +1,41 @@
+Mar 23 / 2024
+
+I wish I'd started keeping a devlog earlier. I guess I did a few recordings on
+youtube, but lately I haven't felt like streaming coding sessions.
+
+So: there are a few things I'm trying to find solutions for. 
+
+The first is that my auto-generated sliding scale is totally unreadable. The 
+orbit of Venus is very close to 8/13s of Earth's, which is causing my tick marks 
+to overlap each other. One idea would be to have two lines for Venus and smartly
+place tick marks on one or the other to maximize readability. Another would be
+to code up some complicated logic for finding all tick mark positions, guessing
+how big the rendered text would be, and automatically placing the text so it
+doesn't overlap. Maybe something like:
+                      8
+                   40 |
+                 80 | |
+                  | | |
+... --------------+-+-+------ ...
+
+The next problem is kind of a minor one. The default planet symbols in whatever
+font is getting used by the SVG text elements don't look nice (to me). I think
+I'll probably just need to draw them in inkscape or something. Or maybe I could
+find some nice drawings online.
+
+The other thing I'm working on is finding a way to produce the reference card.
+One idea is to just drawit inkscape, which is honestly fine as an option, 
+given that I have no immediate plans to support other print sizes. And just
+manually making a reference card for each print size isn't that big of a deal,
+just re-flow the text and maybe move some images around. 
+
+
+
+March 24 / 2024
+
+I've been trying to think of a way to handle predicting the Moon's position. 
+The main idea I have right now is to add two scale to the transparent sheet
+(above all the other sliding scales). One has markings for dates and times 
+of day for one orbit of the moon, and the other is like all the other
+sliding scales (it would be like the Mercury scale, and would have 11
+indices). Let me go make a drawing...

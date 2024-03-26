@@ -16,6 +16,7 @@ sidereal_orbital_periods = {
     {"Mars",    686.98    },
     {"Jupiter", 4332.589  },
     {"Saturn",  10755.698 },
+    {"Moon",    27.321582 }
 }
 
 ------------------------
@@ -96,6 +97,7 @@ planet_symbols.Earth   = "🜨"
 planet_symbols.Mars    = "♂"
 planet_symbols.Jupiter = "♃"
 planet_symbols.Saturn  = "♄"
+planet_symbols.Moon    = "☽"
 
 ----------------------
 -- Helper functions --
