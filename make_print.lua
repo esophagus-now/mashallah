@@ -70,14 +70,14 @@ lp = assert(io.open("out/lawhat_print.svg", "w"))
 -- Do the lawhat
 
 lp:write(string.format([[
-<svg viewBox="0 0 %f %f" width="%fmm" height="%fmm"" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 %f %f" width="%fmm" height="%fmm" xmlns="http://www.w3.org/2000/svg">
 ]],
         paper_width, paper_height,
         paper_width, paper_height
 ))
 
 lp:write(string.format([[
-     <path d="M %f,%f v %f m %f,0 v %f" stroke-width=%f stroke="pink" fill="none"/>
+     <path d="M %f,%f v %f m %f,0 v %f" stroke-width="%f" stroke="pink" fill="none"/>
 ]],
     print_xoff, print_yoff,
     print_height, print_width, -print_height,
@@ -89,7 +89,7 @@ lp:write(ltxt)
 lp:write(use("lawhat_"..arg[1], print_xoff,                print_yoff+total_height, true))
 lp:write(use("lawhat_"..arg[2], print_xoff+total_width+10, print_yoff+total_height, true))
 lp:write(string.format([[
-    <path d="M %f,%f h %f" stroke-width=%f stroke="pink" />
+    <path d="M %f,%f h %f" stroke-width="%f" stroke="pink" />
 ]],
     print_xoff, print_yoff + 2.5*total_height, print_width,
     laser_kerf
@@ -118,34 +118,17 @@ atxt = table.concat(atxt,"")
 ap:write(string.format([[
 <svg viewBox="0 0 %f %f" width="%fmm" height="%fmm" xmlns="http://www.w3.org/2000/svg">
 ]],
-        total_width+draw_xoff+draw_width, 4*padded_height,
-        total_width+draw_xoff+draw_width, 4*padded_height
+    paper_width, paper_height,
+    paper_width, paper_height
 ))
 
-ap:write[[<g id="ankabut">\n]]
+ap:write([[<symbol id="ankabut">]], "\n")
 ap:write(atxt)
-ap:write[[</g>\n]]
-ap:write(string.format([[
-    <use href="#ankabut" x="%f" y="%f" />
-]], draw_width, 0))
-ap:write(string.format([[
-    <use href="#ankabut" x="%f" y="%f" />
-]], 0, padded_height))
-ap:write(string.format([[
-    <use href="#ankabut" x="%f" y="%f" />
-]], draw_width, padded_height))
-ap:write(string.format([[
-    <use href="#ankabut" x="%f" y="%f" />
-]], 0, padded_height*2))
-ap:write(string.format([[
-    <use href="#ankabut" x="%f" y="%f" />
-]], draw_width, padded_height*2))
-ap:write(string.format([[
-    <use href="#ankabut" x="%f" y="%f" />
-]], 0, padded_height*3))
-ap:write(string.format([[
-    <use href="#ankabut" x="%f" y="%f" />
-]], draw_width, padded_height*3))
+ap:write"</symbol>\n"
+for i=0,3 do
+    ap:write(use("ankabut", print_xoff,            print_yoff+padded_height*i))
+    ap:write(use("ankabut", print_xoff+draw_width, print_yoff+padded_height*i))
+end
 
 ap:write"</svg>\n"
 ap:close()
