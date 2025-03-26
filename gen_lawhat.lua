@@ -11,31 +11,100 @@ require"common"
 
 -- Coords in degrees, timezone in hours
 other_cities = {
-    ["Fredericton"] = {45.96,  66.64, -4}, -- From Google autoresult (timezone from memory)
+    ["Toronto"]     = {43.65,  79.38, -5}, -- From Google autoresult (timezone from memory)
+    ["Fredericton"] = {45.96,  66.64, -4},
     ["Montréal"]    = {45.50,  73.57, -5},
     ["Halifax"]     = {44.65,  63.57, -4},
     ["Ottawa"]      = {45.42,  75.70, -5},
     ["Moncton"]     = {46.09,  64.77, -4}, -- Wikipedia
+    ["Riverview"]   = {46.09,  64.77, -4}, -- Reskin of Moncton lol
     ["Inuvik"]      = {68.34, 133.72, -7}, -- Wikipedia
     ["Bogotá"]      = { 4.71,  74.07, -5}, -- Wikipedia
+    ["Livingstone Fire Base"] = {49.88, 114.38, -7},-- Google maps (hi Eric)
+    ["Algonquin Park"] = {45.524233, 78.412550, -5}, -- Clicked on Rock Lake in Google maps
+    ["Landry Office"] = {47.67, 64.95, -4}, -- Google maps (timezone from memory)
+    ["Zürich"]      = {47.22,  -8.32,  1} -- Wikipedia
 }
 
 city_name = "Toronto"
+lang = arg[2] or "en"
 
 if other_cities[arg[1]] then
     city_name = arg[1]
-    latitude, longitude, time_zone = unpack(other_cities[arg[1]])
+    latitude, longitude, time_zone, lang_code = unpack(other_cities[arg[1]])
 elseif arg[1] then
     error("Unrecognized city name")
 end
 
-calib_str = string.format(
-    "Calibrated for %s (%.1f˚ N, %.1f˚ W, UTC%d)",
-    city_name,
-    latitude, 
-    longitude,
-    time_zone
-)
+east = "E"
+west = "W"
+north = "N"
+south = "S"
+if lang == "fr" then
+    west = "O"
+elseif lang == "de" then
+    east = "O"
+end
+
+longitude_dir = west
+if longitude < 0 then
+    longitude_dir = east
+end
+
+latitude_dir = north
+if latitude < 0 then
+    latitude_dir = south
+end
+
+noon_str = "Noon"
+midnight_str = "M"
+
+if lang == "fr" then
+    noon_str = "Midi"
+elseif lang == "de" then
+    noon_str = "Mittag"
+end
+
+months = months_en
+if lang == "fr" then
+    months = months_fr
+elseif lang == "de" then
+    months = months_de
+end
+
+if lang == "en" then
+    calib_str = string.format(
+        "Calibrated for %s (%.1f˚ %s, %.1f˚ %s, UTC%+d)",
+        city_name,
+        math.abs(latitude), 
+        latitude_dir,
+        math.abs(longitude),
+        longitude_dir,
+        time_zone
+    )
+elseif lang == "fr" then
+    calib_str = string.format(
+        "Calibré pour %s (%.1f˚ %s, %.1f˚ %s, UTC%+d)",
+        city_name,
+        math.abs(latitude), 
+        latitude_dir,
+        math.abs(longitude),
+        longitude_dir,
+        time_zone
+    )
+elseif lang == "de" then
+    calib_str = string.format(
+        "Kalibriert für %s (%.1f˚ %s, %.1f˚ %s, UTC%+d)", -- google translate
+        city_name,
+        math.abs(latitude), 
+        latitude_dir,
+        math.abs(longitude),
+        longitude_dir,
+        time_zone
+    )
+else
+    error"Unknown language code"
+end
 
 
 
@@ -202,14 +271,14 @@ for az = 0,359,(360/24) do
     -- FIXME: why did I have to do 180-az???
     local label_text = string.format("%.0f", angle_clamp(180-az))
     -- Some special cases just for fun
-    if label_text == "0"   then label_text = "N"  end
-    if label_text == "45"  then label_text = "NE" end
-    if label_text == "90"  then label_text = "E"  end
-    if label_text == "135" then label_text = "SE" end
-    if label_text == "180" then label_text = "S"  end
-    if label_text == "225" then label_text = "SW" end
-    if label_text == "270" then label_text = "W"  end
-    if label_text == "315" then label_text = "NW" end
+    if label_text == "0"   then label_text = north         end
+    if label_text == "45"  then label_text = north .. east end
+    if label_text == "90"  then label_text = east          end
+    if label_text == "135" then label_text = south .. east end
+    if label_text == "180" then label_text = south          end
+    if label_text == "225" then label_text = south .. west end
+    if label_text == "270" then label_text = west          end
+    if label_text == "315" then label_text = north .. west end
 
     local label_size = 1.4 -- mm 
     local label_weight = "normal"
@@ -298,7 +367,7 @@ for i = 0,23 do
 
     local hour_str = tostring(hour_num)
     if hour_num == 12 then
-        hour_str = ((i<12) and "M" or "Noon")
+        hour_str = ((i<12) and midnight_str or noon_str)
     elseif i<10 then
         hour_str = hour_str .. "am"
     elseif i>12 and i<22 then
@@ -356,8 +425,8 @@ str1 = str1 .. string.format([[
 ------------------------
 
 str1 = str1 .. "</svg>"
-print("out/lawhat_" .. city_name .. ".svg")
-f = io.open("out/lawhat_" .. city_name .. ".svg", "wb")
+print("out/lawhat_" .. city_name .. "_" .. lang .. ".svg")
+f = io.open("out/lawhat_" .. city_name .. "_" .. lang .. ".svg", "wb")
 f:write(str1)
 f:flush()
 f = nil

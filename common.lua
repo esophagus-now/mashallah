@@ -75,7 +75,7 @@ dst_scale_y = time_of_day_scale_y + 4 -- mm
 rule_xoff  = draw_xoff  + 1 -- mm
 rule_width = draw_width - 2 -- mm
 
-months = {
+months_en = {
     {"Ja", 31},
     {"Fe", 28},
     {"Mr", 31},
@@ -86,6 +86,37 @@ months = {
     {"Au", 31},
     {"Se", 30},
     {"Oc", 31},
+    {"No", 30},
+    {"De", 31}
+}
+
+months_fr = {
+    {"Ja", 31},
+    {"Fé", 28},
+    {"Mr", 31},
+    {"Av", 30},
+    {"Mai", 31},
+    {"Jn", 30},
+    {"Jl", 31},
+    {"Ao", 31},
+    {"Se", 30},
+    {"Oc", 31},
+    {"No", 30},
+    {"Dé", 31}
+}
+
+-- https://www.rocketlanguages.com/german/time/months-in-german?srsltid=AfmBOooeOWh3ZBqP8V9qaJATpRg1he75RPd2FTjRDqrTC0Yiekzg2dyT
+months_de = {
+    {"Ja", 31},
+    {"Fe", 28},
+    {"Mr", 31},
+    {"Ap", 30},
+    {"Mai", 31},
+    {"Jn", 30},
+    {"Jl", 31},
+    {"Au", 31},
+    {"Se", 30},
+    {"Ok", 31},
     {"No", 30},
     {"De", 31}
 }

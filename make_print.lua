@@ -39,12 +39,13 @@ print_width  = paper_width  - 2*margin
 print_yoff   = margin
 print_height = paper_height - 2*margin
 
-a = assert(io.open"out/ankabut.svg")
-
 local cities = {}
+local langs = {}
 for n=1,4 do
-    if not arg[n] then arg[n] = "Toronto" end
+    if not arg[n] then arg[n] = "Toronto_en" end
     cities[arg[n]] = true
+    local lang = assert(arg[n]:match"_(.*)$")
+    langs[n-1] = lang -- need zero-indexing for later loop
 end
 
 ltxt = {}
@@ -106,14 +107,6 @@ lp:close()
 -- the pieces out
 padded_height = total_height + 4 -- mm
 
-atxt = {}
-for ll in a:lines() do
-    if not ll:match"svg" then 
-        table.insert(atxt,ll) 
-    end
-end
-a:close()
-atxt = table.concat(atxt,"")
 
 ap:write(string.format([[
 <svg viewBox="0 0 %f %f" width="%fmm" height="%fmm" xmlns="http://www.w3.org/2000/svg">
@@ -122,12 +115,38 @@ ap:write(string.format([[
     paper_width, paper_height
 ))
 
-ap:write([[<symbol id="ankabut">]], "\n")
-ap:write(atxt)
-ap:write"</symbol>\n"
+supported_langs = {"en", "fr", "de"}
+for _,lang in pairs(supported_langs) do
+    local a = assert(io.open("out/ankabut_" .. lang .. ".svg"))
+    
+    atxt = {}
+    for ll in a:lines() do
+        if not ll:match"svg" then 
+            table.insert(atxt,ll) 
+        end
+    end
+    a:close()
+    atxt = table.concat(atxt,"")
+    
+    ap:write(string.format(
+        "<symbol id=\"ankabut_%s\">\n",
+        lang
+    ))
+    ap:write(atxt)
+    ap:write"</symbol>\n"
+end
+
 for i=0,3 do
-    ap:write(use("ankabut", print_xoff,            print_yoff+padded_height*i))
-    ap:write(use("ankabut", print_xoff+draw_width, print_yoff+padded_height*i))
+    ap:write(use(
+        "ankabut_"..langs[i], 
+        print_xoff, 
+        print_yoff+padded_height*i
+    ))
+    ap:write(use(
+        "ankabut_"..langs[i], 
+        print_xoff+draw_width, 
+        print_yoff+padded_height*i
+    ))
 end
 
 ap:write"</svg>\n"

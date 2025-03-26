@@ -7,6 +7,19 @@ require"common"
 require"constellation_lut"
 require"ldb"
 
+------------------
+-- Localization --
+------------------
+
+lang = arg[1] or "en"
+
+months = months_en
+if lang == "fr" then
+    months = months_fr
+elseif lang == "de" then
+    months = months_de
+end
+
 -----------------------
 -- Read in star data --
 -----------------------
@@ -39,7 +52,7 @@ f:close()
 -- SVG tag and bounding boxes --
 --------------------------------
 
-f = io.open("out/ankabut.svg", "wb")
+f = assert(io.open("out/ankabut_" .. lang .. ".svg", "wb"))
 
 f:write(string.format([[
 <svg viewBox="0 0 %f %f" width="%fmm" height="%fmm" xmlns="http://www.w3.org/2000/svg">
